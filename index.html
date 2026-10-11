@@ -111,6 +111,7 @@ summary{cursor:pointer;color:var(--mute);font-size:.8rem}details.note summary{fo
     <p class="sub" data-i="sub"></p></div>
     <button class="chip" id="lang" type="button">中文</button>
   </header>
+  <p class="sub about" data-i="about" style="max-width:none;margin:-4px 0 14px;line-height:1.5"></p>
 
   <section class="panel ctl" aria-label="Controls">
     <div>
@@ -169,7 +170,7 @@ summary{cursor:pointer;color:var(--mute);font-size:.8rem}details.note summary{fo
     <div class="rlw"><div class="rlr rlhd" id="rlh"></div><div id="rlrows"></div></div>
   </section>
 
-  <details class="panel tbl" id="tblD" hidden><summary data-i="tblT"></summary>
+  <details class="panel tbl" id="tblD"><summary data-i="tblT"></summary>
     <div class="tabs">
       <span class="sp"></span>
       <button class="chip" id="fA" aria-pressed="false" data-i="fAll"></button><button class="chip" id="fC" aria-pressed="true" data-i="fComp"></button>
@@ -232,6 +233,7 @@ function histSvg(el,r,lo,hi){
 
 const TX={
 en:{title:"2026 Midterm Seat Model",
+about:"This model estimates the chances of each party winning the 2026 House, Senate and governorships. For every race it averages several signals: the FiftyPlusOne forecast, Polymarket prices, Cook ratings, RealClearPolling averages and district fundamentals. It then simulates 20,000 elections to get control odds and expected seats. It updates twice a day. It is a transparent way to compare signals, not an official forecast.",
 sub:"Data as of {asof} · FPO · Polymarket · Cook · RCP polls · Fundamentals · Drag the sliders and seats and odds recompute instantly",
 natL:"National House vote margin (Democratic lead)",
 natH:"Default D+{N0} (average of FPO and RCP generic ballot). Moving away from it shifts the FPO, Polymarket, Cook and poll signals by the same amount; the table shows shifted values. Fundamentals shift = this value + 1.5.",
@@ -254,6 +256,7 @@ method:"Each seat's composite is a weighted average of available signals (missin
 src:"Source code and data on GitHub",
 names:{AK:"Alaska",OH:"Ohio",TX:"Texas",IA:"Iowa",KS:"Kansas",ME:"Maine",MI:"Michigan",NE:"Nebraska",SC:"South Carolina",NV:"Nevada",WI:"Wisconsin",GA:"Georgia",FL:"Florida"}},
 zh:{title:"2026 年中期选举席位模型",
+about:"本模型估计 2026 年美国众议院、参议院和州长选举中各党的获胜概率。对每场选举,它综合 FiftyPlusOne 预测、Polymarket 价格、Cook 评级、RealClearPolling 民调平均和选区基本面,再模拟 20,000 次选举,得出控制权概率和预期席位。每天更新两次。这是比较各类信号的透明工具,不是官方预测。",
 sub:"数据截至 {asof} · FPO · Polymarket · Cook · RCP 民调 · 基本面 · 拖动滑块,席位和概率即时重算",
 natL:"全国众议院得票差(民主党领先)",
 natH:"默认 D+{N0}(FPO 与 RCP 通用选票的平均)。偏离默认值时,FPO、Polymarket、Cook 和民调信号会同步移动,表格显示移动后的值。基本面的移动量 = 此值 + 1.5。",
