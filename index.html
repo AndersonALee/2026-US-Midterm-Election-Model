@@ -327,7 +327,8 @@ function candBlock(ty,id,x,nm){const c=CN&&CN[ty]&&CN[ty][id];const [n,cls]=rati
   if(c){const o={D:0,R:1},cc=c.concat(c.some(a=>a[0]!=='R')?[]:[['D','Democratic nominee (name n/a)',0]]).sort((a,b)=>(o[a[0]]??2)-(o[b[0]]??2)),di=cc.findIndex(a=>a[0]==='D'),si=di>=0?di:cc.findIndex(a=>a[0]!=='R');
     h+=cc.map((a,i)=>({a,p:a[0]==='R'?1-x.comp:i===si?x.comp:null})).sort((u,v)=>(v.p??-1)-(u.p??-1)).map(({a,p})=>`<div class="cr ${a[0]}"><span>${a[2]?'* ':''}${a[1]}${a[0]==='I'?' (I)':''}</span><span>${p==null?'–':plb(p)}</span></div>`).join('')}
   return h+'<hr>'}
-function tipFor(k){const [ty,id]=k.split(":");
+function tipFor(k){const s=tipFor0(k),i=k.slice(2);if(k[0]!=='H'||!RG[i])return s;const b='<b>'+i+'</b>';return s.replace(b,`<span>${b} <span class="rgn" style="display:inline;margin-left:5px">${RG[i][lang==='zh'?1:0]}</span></span>`)}
+function tipFor0(k){const [ty,id]=k.split(":");
   if(ty==="H"){const h=H.find(x=>x.id===id);if(h)return (CN&&CN.H&&CN.H[id]?candBlock("H",id,h,id)+`${t('comp')}: ${h.comp<.5?pc(1-h.comp)+'% R':pc(h.comp)+'% D'}<br>`+sig(h):tipHead(id,h.comp)+"<br>"+sig(h)+(CN?`<br><span class="mu">${t('noNames')}</span>`:""));const a=AL.find(x=>x.id===id);if(CN&&CN.H&&CN.H[id])return candBlock('H',id,{comp:a.c},id)+`${t('comp')}: ${a.c<.5?pc(1-a.c)+'% R':pc(a.c)+'% D'}<br>`+`<span class="mu">${t('tipSafe')}</span>`;return tipHead(id,a.c)+`<br><span class="mu">${t('tipSafe')}</span>`}
   const x=(ty==="S"?S:G).find(y=>y.id===id),nm=sname(id);
   if(x)return candBlock(ty,id,x,nm)+`${t('comp')}: ${x.comp<.5?pc(1-x.comp)+'% R':pc(x.comp)+'% D'}<br>`+sig(x);
