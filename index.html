@@ -93,8 +93,8 @@ a{color:var(--dem)}
 .sw{display:inline-block;width:12px;height:12px;background:var(--f);border-radius:2px;margin-right:5px;vertical-align:-2px}
 #mapLg{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:.74rem;color:var(--mute);margin-top:8px}
 .sl{font-size:9px;fill:var(--mute);pointer-events:none}.sl2{font-size:11px;fill:var(--ink);paint-order:stroke;stroke:var(--bg);stroke-width:2.5px;pointer-events:none;text-anchor:middle}
-#tip{position:fixed;z-index:9;max-width:270px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:.78rem;line-height:1.55;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.28)}
-#tip .mu{color:var(--mute)}details.tbl>summary{font-weight:600;color:var(--ink)}
+#tip{position:fixed;z-index:9;max-width:320px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:.78rem;line-height:1.55;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.28)}
+#tip .th{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:4px}#tip .cr{display:flex;justify-content:space-between;gap:16px;font-family:var(--mono);font-size:.78rem}#tip .cr.D{color:var(--dem)}#tip .cr.R{color:var(--rep)}#tip hr{border:0;border-top:1px solid var(--line);margin:6px 0}#tip .mu{color:var(--mute)}details.tbl>summary{font-weight:600;color:var(--ink)}
 summary{cursor:pointer;color:var(--mute);font-size:.8rem}details.note summary{font-weight:600;color:var(--ink)}
 </style></head><body>
 <div class="wrap">
@@ -176,7 +176,7 @@ summary{cursor:pointer;color:var(--mute);font-size:.8rem}details.note summary{fo
 </div>
 
 <script>
-let CD=null,view='geo',zoomK='us';const ZM={nyc:[870,215,68],la:[89,365,68],chi:[636,228,68],bay:[39,267,56],dc:[825,263,72],phl:[852,237,56],bos:[907,169,52],hou:[510,508,68],dal:[479,440,68],atl:[715,404,68],mia:[817,564,60],det:[710,206,60],sea:[99,49,60],phx:[199,399,60],den:[344,275,56],twin:[541,161,56]};const ZN={en:{us:'Zoom: whole US',nyc:'New York',la:'Los Angeles',chi:'Chicago',bay:'SF Bay Area',dc:'DC / Baltimore',phl:'Philadelphia',bos:'Boston',hou:'Houston',dal:'Dallas–Fort Worth',atl:'Atlanta',mia:'Miami',det:'Detroit',sea:'Seattle',phx:'Phoenix',den:'Denver',twin:'Twin Cities'},zh:{us:'缩放:全国',nyc:'纽约',la:'洛杉矶',chi:'芝加哥',bay:'旧金山湾区',dc:'华盛顿/巴尔的摩',phl:'费城',bos:'波士顿',hou:'休斯敦',dal:'达拉斯-沃思堡',atl:'亚特兰大',mia:'迈阿密',det:'底特律',sea:'西雅图',phx:'凤凰城',den:'丹佛',twin:'双城(明尼阿波利斯)'}};let H=[],S=[],G=[],D0={},HIST=[],lang='en',MP=null,AL=[];
+let CN=null,CD=null,view='geo',zoomK='us';const ZM={nyc:[870,215,68],la:[89,365,68],chi:[636,228,68],bay:[39,267,56],dc:[825,263,72],phl:[852,237,56],bos:[907,169,52],hou:[510,508,68],dal:[479,440,68],atl:[715,404,68],mia:[817,564,60],det:[710,206,60],sea:[99,49,60],phx:[199,399,60],den:[344,275,56],twin:[541,161,56]};const ZN={en:{us:'Zoom: whole US',nyc:'New York',la:'Los Angeles',chi:'Chicago',bay:'SF Bay Area',dc:'DC / Baltimore',phl:'Philadelphia',bos:'Boston',hou:'Houston',dal:'Dallas–Fort Worth',atl:'Atlanta',mia:'Miami',det:'Detroit',sea:'Seattle',phx:'Phoenix',den:'Denver',twin:'Twin Cities'},zh:{us:'缩放:全国',nyc:'纽约',la:'洛杉矶',chi:'芝加哥',bay:'旧金山湾区',dc:'华盛顿/巴尔的摩',phl:'费城',bos:'波士顿',hou:'休斯敦',dal:'达拉斯-沃思堡',atl:'亚特兰大',mia:'迈阿密',det:'底特律',sea:'西雅图',phx:'凤凰城',den:'丹佛',twin:'双城(明尼阿波利斯)'}};let H=[],S=[],G=[],D0={},HIST=[],lang='en',MP=null,AL=[];
 const CK={T:.5,l:.7,L:.3,k:.88,K:.12,S:.97,s:.03};
 function Phi(x){const t=1/(1+.2316419*Math.abs(x)),d=.3989423*Math.exp(-x*x/2);const p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p}
 function probit(p){p=Math.min(Math.max(p,1e-6),1-1e-6);let lo=-8,hi=8;for(let i=0;i<40;i++){const m=(lo+hi)/2;Phi(m)<p?lo=m:hi=m}return lo}
@@ -225,7 +225,7 @@ fwL:"Fundamentals weight",fwH:"Other signals scale proportionally: FPO 35 · Pol
 rst:"Reset sliders",hintT:"How the sliders work",methT:"Method",hT:"House · 218 needed",sT:"Senate · 51 needed",gT:"Governors · 36 races",
 expS:"expected Dem seats",expG:"expected Dem governors (of 50)",ctl:"Control",rng:"80% range",maj:"Majority (≥26 of 50)",
 hD:"House: Democratic seat distribution",sD:"Senate: Democratic seat distribution",
-trT:"Trend across model runs",tblT:"Show data table",rWin:"R win %",vwT:"Switch to tile map",vwG:"Switch to district map",ampSrc:"District boundaries (post-redistricting) © amCharts geodata, linkware license",mapNHg:"Real district boundaries (latest maps after mid-decade redistricting). The 66 closest districts react to the sliders; the other {nr} are fixed. Small urban districts are hard to see here: switch to the tile map.",mapNH:"Each square is one district, grouped by state. The 66 closest districts react to the sliders; the other {nr} are fixed in the simulation (colored by their composite).",mapNS:"Colors follow our own rating and update with the sliders. Hover or tap a state for details.",mapNG:"All 36 governor races are modeled. Hover or tap a state for details.",
+trT:"Trend across model runs",tblT:"Show data table",oo:" out of 100",rWin:"R win %",vwT:"Switch to tile map",vwG:"Switch to district map",ampSrc:"District boundaries (post-redistricting) © amCharts geodata, linkware license",mapNHg:"Real district boundaries (latest maps after mid-decade redistricting). The 66 closest districts react to the sliders; the other {nr} are fixed. Small urban districts are hard to see here: switch to the tile map.",mapNH:"Each square is one district, grouped by state. The 66 closest districts react to the sliders; the other {nr} are fixed in the simulation (colored by their composite).",mapNS:"Colors follow our own rating and update with the sliders. Hover or tap a state for details.",mapNG:"All 36 governor races are modeled. Hover or tap a state for details.",
 lgNot:"Not up for reelection",lgAssD:"Solid D, assumed (not modeled)",lgAssR:"Solid R, assumed (not modeled)",lgUp:"Up in 2026, not tracked",lgNoG:"No race in 2026",
 tipSafe:"Not among the 66 closest districts; held fixed in the simulation.",tipAssD:"Up in 2026 but not modeled; treated as a Democratic hold.",tipAssR:"Up in 2026 but not modeled; treated as a Republican hold.",tipNoS:"No Senate race in 2026 (not up for reelection).",tipUpG:"Governor race in 2026, not tracked by this model.",tipNoG:"No governor race in 2026.",
 trEmpty:"The trend appears after the second model run (runs happen every Tuesday and Saturday).",
@@ -247,7 +247,7 @@ fwL:"基本面权重",fwH:"其他信号按比例缩放:FPO 35 · Polymarket 25 �
 rst:"重置滑块",hintT:"滑块说明",methT:"方法",hT:"众议院 · 需 218 席",sT:"参议院 · 需 51 席",gT:"州长 · 36 场选举",
 expS:"民主党预期席位",expG:"民主党州长预期数(共 50)",ctl:"控制概率",rng:"80% 区间",maj:"过半(≥26/50)",
 hD:"众议院:民主党席位分布",sD:"参议院:民主党席位分布",
-trT:"各次模型运行的走势",tblT:"显示数据表",rWin:"共和党胜率 %",vwT:"切换为方块图",vwG:"切换为选区边界图",ampSrc:"选区边界(重划后)© amCharts geodata,linkware 许可",mapNHg:"真实选区边界(中期重划后的最新地图)。最接近的 66 个选区随滑块变化,其余 {nr} 个固定。城市里的小选区在这里很难看清,可切换为方块图。",mapNH:"每个方块代表一个选区,按州分组。最接近的 66 个选区会随滑块变化;其余 {nr} 个在模拟中固定(按各自综合概率着色)。",mapNS:"颜色按本模型评级,随滑块更新。悬停或点按州查看详情。",mapNG:"36 个州长选举全部建模。悬停或点按州查看详情。",
+trT:"各次模型运行的走势",tblT:"显示数据表",oo:" / 100",rWin:"共和党胜率 %",vwT:"切换为方块图",vwG:"切换为选区边界图",ampSrc:"选区边界(重划后)© amCharts geodata,linkware 许可",mapNHg:"真实选区边界(中期重划后的最新地图)。最接近的 66 个选区随滑块变化,其余 {nr} 个固定。城市里的小选区在这里很难看清,可切换为方块图。",mapNH:"每个方块代表一个选区,按州分组。最接近的 66 个选区会随滑块变化;其余 {nr} 个在模拟中固定(按各自综合概率着色)。",mapNS:"颜色按本模型评级,随滑块更新。悬停或点按州查看详情。",mapNG:"36 个州长选举全部建模。悬停或点按州查看详情。",
 lgNot:"今年无参议院改选",lgAssD:"稳 D,假定(未建模)",lgAssR:"稳 R,假定(未建模)",lgUp:"2026 年有选举,未追踪",lgNoG:"2026 年无选举",
 tipSafe:"不在最接近的 66 个选区之内,模拟中固定。",tipAssD:"2026 年有选举,但未建模,按民主党守住处理。",tipAssR:"2026 年有选举,但未建模,按共和党守住处理。",tipNoS:"2026 年无参议院选举(不改选)。",tipUpG:"2026 年有州长选举,本模型未追踪。",tipNoG:"2026 年无州长选举。",
 trEmpty:"第二次模型运行之后会显示走势(每周二、周六各运行一次)。",
@@ -288,10 +288,16 @@ const pc=v=>v==null?'–':Math.round(v*100);
 const side=(v,r)=>v==null?'–':Math.round((r?1-v:v)*100);
 function sig(x){const r=x.comp<.5;return `${r?t('rWin')+': ':''}FPO ${side(x.fA,r)} · PM ${side(x.pA,r)} · Cook ${ckl2(x.ck)} · ${t('fund')} ${side(x.fund,r)}`}
 function tipHead(name,p){const [n,c]=ratingOf(p);return `<b>${name}</b> <span class="rt ${c}">${t(n)}</span><br>${t('comp')}: ${p<.5?pc(1-p)+'% R':pc(p)+'% D'}`}
+const plb=p=>{const v=p*100;return(v<1?'<1':v>99?'>99':Math.round(v))+t('oo')};
+function candBlock(ty,id,x,nm){const c=CN&&CN[ty]&&CN[ty][id];const [n,cls]=ratingOf(x.comp);
+  let h=`<div class="th"><b>${nm}</b><span class="rt ${cls}">${t(n)}</span></div>`;
+  if(c){const o={D:0,R:1},cc=c.slice().sort((a,b)=>(o[a[0]]??2)-(o[b[0]]??2)),di=cc.findIndex(a=>a[0]==='D'),si=di>=0?di:cc.findIndex(a=>a[0]!=='R');
+    h+=cc.map((a,i)=>{const p=a[0]==='R'?1-x.comp:i===si?x.comp:null;return `<div class="cr ${a[0]}"><span>${a[2]?'* ':''}${a[1]}${a[0]==='I'?' (I)':''}</span><span>${p==null?'–':plb(p)}</span></div>`}).join('')}
+  return h+'<hr>'}
 function tipFor(k){const [ty,id]=k.split(":");
   if(ty==="H"){const h=H.find(x=>x.id===id);if(h)return tipHead(id,h.comp)+"<br>"+sig(h);const a=AL.find(x=>x.id===id);return tipHead(id,a.c)+`<br><span class="mu">${t('tipSafe')}</span>`}
   const x=(ty==="S"?S:G).find(y=>y.id===id),nm=sname(id);
-  if(x)return tipHead(nm,x.comp)+"<br>"+sig(x);
+  if(x)return candBlock(ty,id,x,nm)+`${t('comp')}: ${x.comp<.5?pc(1-x.comp)+'% R':pc(x.comp)+'% D'}<br>`+sig(x);
   if(ty==="S"){if(SEN_D.has(id)||SEN_R.has(id)){const d=SEN_D.has(id);return `<b>${nm}</b> <span class="rt ${d?'s D':'s R'}">${t(d?'Solid D':'Solid R')}</span><br><span class="mu">${t(d?'tipAssD':'tipAssR')}</span>`}return `<b>${nm}</b><br><span class="mu">${t('tipNoS')}</span>`}
   return `<b>${nm}</b><br><span class="mu">${t(GOV_UP.has(id)?'tipUpG':'tipNoG')}</span>`}
 function mapRender(){
@@ -373,6 +379,7 @@ async function init(){
   try{D0=await (await fetch('data.json',{cache:'no-store'})).json()}catch(e){document.body.insertAdjacentHTML('afterbegin','<p style="padding:20px">data.json could not be loaded. Open this page through a web server.</p>');return}
   try{HIST=await (await fetch('history.json',{cache:'no-store'})).json()}catch(e){HIST=[]}
   H=D0.H.split(";").map(r=>{const a=r.split(",");return{id:a[0],f:+a[1],pm:+a[2]<0?null:+a[2],ck:a[3],base:Math.max(-30,Math.min(30,+a[4])),terms:+a[5]}});
+  try{CN=await (await fetch('cands.json')).json()}catch(e){CN=null}
   try{CD=await (await fetch('cd.json')).json()}catch(e){CD=null}
   try{MP=await (await fetch('map.json')).json()}catch(e){MP={p:{},l:{}}}
   const lst=H.map(h=>({id:h.id,st:h.id.slice(0,2),h}));
