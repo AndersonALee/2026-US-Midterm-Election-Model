@@ -8,7 +8,7 @@ RD0=sys.argv[2] if len(sys.argv)>2 else 'site'
 # House fundamentals: Cook 2026 PVI (relative to the nation) converted to the 2024-margin scale used with SH (nation was R+1.5)
 PV=json.load(open(os.path.join(RD0,'pvi.json')))
 BASE=dict((k,PV[k]-1.5) for k in BASE)
-inp=json.load(open(sys.argv[1]));N=inp.get('N',7.8);SH=N+1.5
+inp=json.load(open(sys.argv[1]));N=inp.get('N',7.8);DISC=.7;SH=DISC*N+1.5
 CK={'Toss Up':.5,'Lean D':.7,'Lean R':.3,'Likely D':.88,'Likely R':.12,'Solid D':.97,'Solid R':.03}
 # 2024 Trump margin (points, + = Trump) for every state with a 2026 race
 TRM=dict(AL=30.5,AK=13.1,AZ=5.5,AR=30.6,CA=-20.2,CO=-11.0,CT=-14.5,DE=-14.6,FL=13.1,GA=2.2,HI=-25.2,ID=36.0,IL=-10.9,IA=13.2,KS=15.9,KY=25.5,LA=22.0,ME=-6.5,MD=-28.6,MA=-25.2,MI=1.4,MN=-4.2,MS=22.0,MT=19.9,NE=20.5,NV=3.1,NH=-2.8,NJ=-5.9,NM=-6.0,NY=-12.6,NC=3.2,OH=11.2,OK=34.3,OR=-14.3,PA=1.8,RI=-13.9,SC=17.8,SD=29.3,TN=29.8,TX=13.6,VT=-31.9,VA=-5.8,WV=42.0,WI=0.9,WY=46.1)
@@ -144,7 +144,7 @@ As=';'.join('%s,%s,%s'%(x['id'],round(x['comp'],3),round(max(-30,min(30,PV[x['id
 Hs=';'.join(','.join(str(v) for v in [x['id'],-1 if x['fn'] else round(x['f'],3),-1 if x['pm'] is None else round(x['pm'],3),ckcode(x['ck']) if x['id'] in cookh else '',round(max(-30,min(30,PV[x['id']])),1),terms(x['id'])]) for x in sorted(top,key=lambda x:x['id']))
 Ss=[[x['id'],round(x['f'],3),None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cooks'].get(x['id']),''),SEN_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa']] for x in S]
 Gs=[[x['id'],None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cookg'].get(x['id']),''),GOV_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa']] for x in G]
-json.dump(dict(asof=res['date'],ts=__import__('datetime').datetime.now(__import__('datetime').timezone.utc).strftime('%Y-%m-%dT%H:%MZ'),N0=N,fixed_dem=fixed,sen_add=SEN_ADD,gov_add=GOV_ADD,gov_thr=GOV_THR,n_listed=66,rho_h=.5,H=Hs,A=As,S=Ss,G=Gs,C={x['id']:round(x['comp'],3) for x in H},SC={x['id']:round(x['comp'],3) for x in S},GC={x['id']:round(x['comp'],3) for x in G}),open(os.path.join(RD,'data.json'),'w'),separators=(',',':'))
+json.dump(dict(asof=res['date'],disc=DISC,ts=__import__('datetime').datetime.now(__import__('datetime').timezone.utc).strftime('%Y-%m-%dT%H:%MZ'),N0=N,fixed_dem=fixed,sen_add=SEN_ADD,gov_add=GOV_ADD,gov_thr=GOV_THR,n_listed=66,rho_h=.5,H=Hs,A=As,S=Ss,G=Gs,C={x['id']:round(x['comp'],3) for x in H},SC={x['id']:round(x['comp'],3) for x in S},GC={x['id']:round(x['comp'],3) for x in G}),open(os.path.join(RD,'data.json'),'w'),separators=(',',':'))
 hist=[r for r in ld('history.json',[]) if r.get('date')!=res['date']]
 hist.append(dict(date=res['date'],N=N,house_mean=res['house']['mean'],house_ctl=res['house']['ctl'],house_lo=res['house']['lo'],house_hi=res['house']['hi'],fpo_only=res['house']['fpo_only'],senate_mean=res['senate']['mean'],senate_ctl=res['senate']['ctl'],senate_lo=res['senate']['lo'],senate_hi=res['senate']['hi'],gov_mean=res['gov']['mean'],gov_maj=res['gov']['maj']))
 json.dump(hist,open(os.path.join(RD,'history.json'),'w'),separators=(',',':'))

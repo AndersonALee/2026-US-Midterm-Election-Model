@@ -122,8 +122,12 @@ summary{cursor:pointer;color:var(--mute);font-size:.8rem}details.note summary{fo
       <label for="fw"><span data-i="fwL"></span><output id="fwO"></output></label>
       <input id="fw" type="range" min="0" max="60" step="5" value="15">
     </div>
+    <div>
+      <label for="fd"><span data-i="fdL"></span><output id="fdO"></output></label>
+      <input id="fd" type="range" min="0" max="100" step="5" value="70">
+    </div>
     <button id="rst" type="button" data-i="rst"></button>
-    <details class="hint" style="grid-column:1/-1"><summary data-i="hintT"></summary><p data-i="natH" style="margin:6px 0 0"></p><p data-i="fwH" style="margin:4px 0 0"></p></details>
+    <details class="hint" style="grid-column:1/-1"><summary data-i="hintT"></summary><p data-i="natH" style="margin:6px 0 0"></p><p data-i="fwH" style="margin:4px 0 0"></p><p data-i="fdH" style="margin:4px 0 0"></p></details>
   </section>
 
   <nav class="tabs" role="group" aria-label="Chamber">
@@ -203,7 +207,7 @@ let state={tab:"H",close:true,sort:"comp",dir:-1};
 let calc={};
 
 function compute(){
-  const N=+$("nat").value,fw=+$("fw").value/100,sh=N+1.5,k=(1-fw)/.75,ks=(1-fw)/.85;
+  const N=+$("nat").value,fw=+$("fw").value/100,sh=N*(+$("fd").value/100)+1.5,k=(1-fw)/.75,ks=(1-fw)/.85;
   const d=N-D0.N0, adj=(p,sg)=>p==null?null:Phi(probit(p)+d/sg);
   H.forEach(h=>{h.fund=Phi((h.base-1.5+sh)/5.5);const c=h.ck?CK[h.ck]:((h.f==null?h.pm>.5:h.f>.5)?.97:.03);h.cookP=adj(c,5.5);h.fA=adj(h.f,5.5);h.pA=adj(h.pm,5.5);h.comp=wavg([[h.fA,.35*k],[h.pA,.25*k],[h.cookP,.15*k],[h.fund,fw]])});
   S.forEach(s=>{s.fund=Phi((-s.tr+sh)/6.5);const c=s.ck?CK[s.ck]:(s.f>.5?.97:.03);s.cookP=adj(c,6.5);s.fA=adj(s.f,6.5);s.pA=adj(s.pm,6.5);s.pP=adj(s.pp,6.5);s.comp=wavg([[s.fA,.25*ks],[s.pA,.20*ks],[s.cookP,.10*ks],[s.pP,.30*ks*(s.pw||0)],[s.fund,fw]])});
@@ -237,7 +241,7 @@ about:"This model estimates the chances of each party winning the 2026 House, Se
 sub:"Last updated {upd} · FPO · Polymarket · Cook · RCP polls · Fundamentals · Drag the sliders and seats and odds recompute instantly",
 natL:"National House vote margin (Democratic lead)",
 natH:"Default D+{N0} (average of FPO and RCP generic ballot). Moving away from it shifts the FPO, Polymarket, Cook and poll signals by the same amount; the table shows shifted values. Fundamentals shift = this value + 1.5.",
-fwL:"Fundamentals weight",fwH:"Other signals scale proportionally: at the default 15%: Senate polls 30 · FPO 25 · Polymarket 20 · Cook 10; Governors polls 43 · Polymarket 28 · Cook 14 (no FPO); House FPO 40 · Polymarket 28 · Cook 17 (no polls). Polls with a stale or thin average count less; races without polls fall back to the other signals.",
+fwL:"Fundamentals weight",fdL:"Generic ballot in fundamentals",fdH:"Share of the national environment (the generic ballot) counted in the fundamentals term. Default 70%: the FPO, Polymarket and Cook signals already reflect part of the national mood, and generic-ballot leads tend to shrink somewhat by November, so counting all of it would double-count. 100% = full, 0% = district lean only.",fwH:"Other signals scale proportionally: at the default 15%: Senate polls 30 · FPO 25 · Polymarket 20 · Cook 10; Governors polls 43 · Polymarket 28 · Cook 14 (no FPO); House FPO 40 · Polymarket 28 · Cook 17 (no polls). Polls with a stale or thin average count less; races without polls fall back to the other signals.",
 rst:"Reset sliders",hintT:"How the sliders work",methT:"Method",hT:"House · 218 needed",sT:"Senate · 51 needed",gT:"Governors · 36 races",
 expS:"expected Dem seats",expG:"expected Dem governors (of 50)",ctl:"Control",rng:"80% range",maj:"Majority (≥26 of 50)",
 hD:"House: Democratic seat distribution",sD:"Senate: Democratic seat distribution",
@@ -260,7 +264,7 @@ about:"本模型估计 2026 年美国众议院、参议院和州长选举中各�
 sub:"最近更新 {upd} · FPO · Polymarket · Cook · RCP 民调 · 基本面 · 拖动滑块,席位和概率即时重算",
 natL:"全国众议院得票差(民主党领先)",
 natH:"默认 D+{N0}(FPO 与 RCP 通用选票的平均)。偏离默认值时,FPO、Polymarket、Cook 和民调信号会同步移动,表格显示移动后的值。基本面的移动量 = 此值 + 1.5。",
-fwL:"基本面权重",fwH:"其他信号按比例缩放:默认 15% 时:参议院 民调 30 · FPO 25 · Polymarket 20 · Cook 10;州长 民调 43 · Polymarket 28 · Cook 14(没有 FPO);众议院 FPO 40 · Polymarket 28 · Cook 17(没有民调)。民调过旧或数量少时权重降低;没有民调的选举回退到其他信号。",
+fwL:"基本面权重",fdL:"基本面中的通用选票占比",fdH:"基本面项里计入多少全国环境(通用选票)。默认 70%:FPO、Polymarket 和 Cook 已经反映了一部分全国风向,而且通用选票的领先到 11 月往往会收窄,全部计入会重复计算。100% = 全部计入,0% = 只看选区倾向。",fwH:"其他信号按比例缩放:默认 15% 时:参议院 民调 30 · FPO 25 · Polymarket 20 · Cook 10;州长 民调 43 · Polymarket 28 · Cook 14(没有 FPO);众议院 FPO 40 · Polymarket 28 · Cook 17(没有民调)。民调过旧或数量少时权重降低;没有民调的选举回退到其他信号。",
 rst:"重置滑块",hintT:"滑块说明",methT:"方法",hT:"众议院 · 需 218 席",sT:"参议院 · 需 51 席",gT:"州长 · 36 场选举",
 expS:"民主党预期席位",expG:"民主党州长预期数(共 50)",ctl:"控制概率",rng:"80% 区间",maj:"过半(≥26/50)",
 hD:"众议院:民主党席位分布",sD:"参议院:民主党席位分布",
@@ -370,7 +374,7 @@ function raceList(){
 const norm_=x=>x.toLowerCase().replace(/[\s\-\.]/g,"");
 function render(){
   if(!D0.N0&&D0.N0!==0)return;
-  $("natO").textContent="D+"+(+$("nat").value).toFixed(1);$("fwO").textContent=$("fw").value+"%";
+  $("natO").textContent="D+"+(+$("nat").value).toFixed(1);$("fwO").textContent=$("fw").value+"%";$("fdO").textContent=$("fd").value+"%";
   compute();
   const h=calc.h,s=calc.s,g=calc.g;
   $("hExp").textContent=Math.round(h.mean);$("hCtl").textContent=pct(h.ctl);$("hRng").textContent=h.lo+"–"+h.hi;$("hBar").style.width=Math.min(100,h.mean/435*100)+"%";
@@ -429,8 +433,8 @@ async function init(){
   S=D0.S.map(a=>({id:a[0],f:a[1],pm:a[2],ck:a[3],tr:a[4],pp:a[5]??null,pw:a[6]??0,pa:a[7]??null}));
   G=D0.G.map(a=>({id:a[0],pm:a[1],ck:a[2],tr:a[3],pp:a[4]??null,pw:a[5]??0,pa:a[6]??null}));
   $("nat").value=D0.N0;
-  $("nat").addEventListener("input",render);$("fw").addEventListener("input",render);
-  $("rst").addEventListener("click",()=>{$("nat").value=D0.N0;$("fw").value=15;render()});
+  $("nat").addEventListener("input",render);$("fw").addEventListener("input",render);$("fd").addEventListener("input",render);
+  $("rst").addEventListener("click",()=>{$("nat").value=D0.N0;$("fw").value=15;$("fd").value=D0.disc!=null?Math.round(D0.disc*100):70;render()});
   $("lang").addEventListener("click",()=>{lang=lang==='zh'?'en':'zh';applyLang()});
   $("thead").addEventListener("click",e=>{const k=e.target.closest("th")?.dataset.k;if(!k)return;if(state.sort===k)state.dir*=-1;else{state.sort=k;state.dir=k==="name"?1:-1}table()});
   const HM={house:"H",senate:"S",governors:"G"},HR={H:"house",S:"senate",G:"governors"};
