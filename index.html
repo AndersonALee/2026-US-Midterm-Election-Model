@@ -381,7 +381,7 @@ async function init(){
   try{D0=await (await fetch('data.json',{cache:'no-store'})).json()}catch(e){document.body.insertAdjacentHTML('afterbegin','<p style="padding:20px">data.json could not be loaded. Open this page through a web server.</p>');return}
   try{HIST=await (await fetch('history.json',{cache:'no-store'})).json()}catch(e){HIST=[]}
   H=D0.H.split(";").map(r=>{const a=r.split(",");return{id:a[0],f:+a[1],pm:+a[2]<0?null:+a[2],ck:a[3],base:Math.max(-30,Math.min(30,+a[4])),terms:+a[5]}});
-  try{CN=await (await fetch('cands.json')).json()}catch(e){CN=null}
+  try{CN=await (await fetch('cands.json',{cache:'no-cache'})).json()}catch(e){CN=null}
   try{CD=await (await fetch('cd.json')).json()}catch(e){CD=null}
   try{MP=await (await fetch('map.json')).json()}catch(e){MP={p:{},l:{}}}
   const lst=H.map(h=>({id:h.id,st:h.id.slice(0,2),h}));
