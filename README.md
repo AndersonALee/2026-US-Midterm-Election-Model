@@ -2,7 +2,7 @@
 
 Interactive seat model for the 2026 US midterms: House, Senate and governors. English / 中文 toggle in the top right.
 
-- Live page: https://zhirun-blip.github.io/2026-US-Midterm-Election-Model/
+- Live page: https://andersonalee.github.io/2026-US-Midterm-Election-Model/
 - `index.html` is the page. It reads `data.json` (current inputs) and `history.json` (one row per model run, used for the trend charts).
 - `model.py` + `pvi.json` (Cook 2026 PVI as House fundamentals) are the model. Run `python3 model.py in.json` to simulate and to write `site/data.json` and `site/history.json`.
 - The model runs every Tuesday and Saturday morning (Chicago time); each run refreshes the two JSON files.
