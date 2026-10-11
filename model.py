@@ -118,7 +118,7 @@ def ckcode(p):
     return ''
 hs=sorted(H,key=lambda x:abs(x['comp']-.5));top=hs[:66];rest=hs[66:]
 fixed=sum(1 for x in rest if x['comp']>.5)
-As=';'.join('%s,%s'%(x['id'],round(x['comp'],3)) for x in sorted(rest,key=lambda x:x['id']))
+As=';'.join('%s,%s,%s'%(x['id'],round(x['comp'],3),round(max(-30,min(30,BASE[x['id']])),1)) for x in sorted(rest,key=lambda x:x['id']))
 Hs=';'.join(','.join(str(v) for v in [x['id'],round(x['f'],3),-1 if x['pm'] is None else round(x['pm'],3),ckcode(x['ck']) if x['id'] in cookh else '',round(max(-30,min(30,BASE[x['id']])),1),terms(x['id'])]) for x in sorted(top,key=lambda x:x['id']))
 Ss=[[x['id'],round(x['f'],3),None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cooks'].get(x['id']),''),SEN_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa']] for x in S]
 Gs=[[x['id'],None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cookg'].get(x['id']),''),GOV_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa']] for x in G]
