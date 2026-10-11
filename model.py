@@ -52,12 +52,15 @@ H=[]
 fpo=inp['fpo'];pmh=inp['pmh']
 for key,b in BASE.items():
     f=fpo.get(key)
-    if f is None: f=.999 if b>0 else .001
     pm=pmh.get(key)
+    fmiss=f is None
+    if fmiss: f=.999 if b>0 else .001
+    if fmiss and (pm is not None or key in cookh): fnone=True
+    else: fnone=False
     c=cookh.get(key,.97 if f>.5 else .03)
     fu=float(norm.cdf((b+SH)/5.5))
-    comp=wavg([(f,.35*kh),(pm,.25*kh),(c,.15*kh),(fu,fund_w)])
-    H.append(dict(id=key,f=f,pm=pm,ck=c,fund=fu,comp=comp))
+    comp=wavg([(None if fnone else f,.35*kh),(pm,.25*kh),(c,.15*kh),(fu,fund_w)])
+    H.append(dict(id=key,f=f,fn=fnone,pm=pm,ck=c,fund=fu,comp=comp))
 S=[]
 for st,tr in SEN_TR.items():
     f=inp['sen'].get(st)
@@ -135,7 +138,7 @@ def ckcode(p):
 hs=sorted(H,key=lambda x:abs(x['comp']-.5));top=hs[:66];rest=hs[66:]
 fixed=sum(1 for x in rest if x['comp']>.5)
 As=';'.join('%s,%s,%s'%(x['id'],round(x['comp'],3),round(max(-30,min(30,PV[x['id']])),1)) for x in sorted(rest,key=lambda x:x['id']))
-Hs=';'.join(','.join(str(v) for v in [x['id'],round(x['f'],3),-1 if x['pm'] is None else round(x['pm'],3),ckcode(x['ck']) if x['id'] in cookh else '',round(max(-30,min(30,PV[x['id']])),1),terms(x['id'])]) for x in sorted(top,key=lambda x:x['id']))
+Hs=';'.join(','.join(str(v) for v in [x['id'],-1 if x['fn'] else round(x['f'],3),-1 if x['pm'] is None else round(x['pm'],3),ckcode(x['ck']) if x['id'] in cookh else '',round(max(-30,min(30,PV[x['id']])),1),terms(x['id'])]) for x in sorted(top,key=lambda x:x['id']))
 Ss=[[x['id'],round(x['f'],3),None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cooks'].get(x['id']),''),SEN_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa']] for x in S]
 Gs=[[x['id'],None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cookg'].get(x['id']),''),GOV_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa']] for x in G]
 json.dump(dict(asof=res['date'],ts=__import__('datetime').datetime.now(__import__('datetime').timezone.utc).strftime('%Y-%m-%dT%H:%MZ'),N0=N,fixed_dem=fixed,sen_add=SEN_ADD,gov_add=GOV_ADD,gov_thr=GOV_THR,n_listed=66,rho_h=.5,H=Hs,A=As,S=Ss,G=Gs,C={x['id']:round(x['comp'],3) for x in H},SC={x['id']:round(x['comp'],3) for x in S},GC={x['id']:round(x['comp'],3) for x in G}),open(os.path.join(RD,'data.json'),'w'),separators=(',',':'))

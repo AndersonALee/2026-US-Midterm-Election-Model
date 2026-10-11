@@ -205,7 +205,7 @@ let calc={};
 function compute(){
   const N=+$("nat").value,fw=+$("fw").value/100,sh=N+1.5,k=(1-fw)/.75,ks=(1-fw)/.85;
   const d=N-D0.N0, adj=(p,sg)=>p==null?null:Phi(probit(p)+d/sg);
-  H.forEach(h=>{h.fund=Phi((h.base+sh)/5.5);const c=h.ck?CK[h.ck]:(h.f>.5?.97:.03);h.cookP=adj(c,5.5);h.fA=adj(h.f,5.5);h.pA=adj(h.pm,5.5);h.comp=wavg([[h.fA,.35*k],[h.pA,.25*k],[h.cookP,.15*k],[h.fund,fw]])});
+  H.forEach(h=>{h.fund=Phi((h.base+sh)/5.5);const c=h.ck?CK[h.ck]:((h.f==null?h.pm>.5:h.f>.5)?.97:.03);h.cookP=adj(c,5.5);h.fA=adj(h.f,5.5);h.pA=adj(h.pm,5.5);h.comp=wavg([[h.fA,.35*k],[h.pA,.25*k],[h.cookP,.15*k],[h.fund,fw]])});
   S.forEach(s=>{s.fund=Phi((-s.tr+sh)/6.5);const c=s.ck?CK[s.ck]:(s.f>.5?.97:.03);s.cookP=adj(c,6.5);s.fA=adj(s.f,6.5);s.pA=adj(s.pm,6.5);s.pP=adj(s.pp,6.5);s.comp=wavg([[s.fA,.25*ks],[s.pA,.20*ks],[s.cookP,.10*ks],[s.pP,.30*ks*(s.pw||0)],[s.fund,fw]])});
   G.forEach(g=>{g.fund=Phi((-g.tr+sh)/6.5);g.cookP=adj(g.ck?CK[g.ck]:((g.pm!=null?g.pm:g.fund)>.5?.97:.03),6.5);g.pA=adj(g.pm,6.5);g.pP=adj(g.pp,6.5);g.comp=wavg([[g.pA,.28*ks],[g.cookP,.14*ks],[g.pP,.43*ks*(g.pw||0)],[g.fund,fw]])});
   calc.h=sim(H.map(h=>h.comp),(D0.rho_h||.5),D0.fixed_dem,218,3000);
@@ -419,7 +419,7 @@ async function init(){
   try{lang=localStorage.getItem('lang')||'en'}catch(e){lang='en'}
   try{D0=await (await fetch('data.json',{cache:'no-store'})).json()}catch(e){document.body.insertAdjacentHTML('afterbegin','<p style="padding:20px">data.json could not be loaded. Open this page through a web server.</p>');return}
   try{HIST=await (await fetch('history.json',{cache:'no-store'})).json()}catch(e){HIST=[]}
-  H=D0.H.split(";").map(r=>{const a=r.split(",");return{id:a[0],f:+a[1],pm:+a[2]<0?null:+a[2],ck:a[3],base:Math.max(-30,Math.min(30,+a[4])),terms:+a[5]}});
+  H=D0.H.split(";").map(r=>{const a=r.split(",");return{id:a[0],f:+a[1]<0?null:+a[1],pm:+a[2]<0?null:+a[2],ck:a[3],base:Math.max(-30,Math.min(30,+a[4])),terms:+a[5]}});
   try{CN=await (await fetch('cands.json',{cache:'no-cache'})).json()}catch(e){CN=null}
   try{window.PVI=await (await fetch('pvi.json',{cache:'no-cache'})).json()}catch(e){window.PVI={}}
   try{CD=await (await fetch('cd.json')).json()}catch(e){CD=null}
