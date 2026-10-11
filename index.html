@@ -39,7 +39,7 @@ input[type=range]{width:100%;accent-color:var(--dem)}
 .big small{font-size:.9rem;color:var(--mute);font-weight:400;margin-left:6px}
 .row{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:8px;font-size:.85rem;color:var(--mute)}
 .row b{font-family:var(--mono);color:var(--ink)}
-#hCtl,#sCtl,#gCtl{font-size:1.7rem;line-height:1.1;font-weight:700}.row #hRng,.row #sRng{font-size:.95rem}.row:has(#hCtl),.row:has(#sCtl),.row:has(#gCtl){font-size:1rem;gap:8px 10px;margin-top:10px}
+.pair{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 30px}.pair .bi{display:inline-flex;align-items:baseline;white-space:nowrap}
 .bar{height:10px;border-radius:2px;background:var(--rep-soft);overflow:hidden;margin-top:10px}
 .bar i{display:block;height:100%;background:var(--dem)}
 .chartwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
@@ -147,16 +147,15 @@ summary{cursor:pointer;color:var(--mute);font-size:.8rem}details.note summary{fo
 
   <section class="read" aria-label="Overview">
     <div class="card" id="cH"><h2 data-i="hT"></h2>
-      <div class="big"><span id="hExp"></span><small data-i="expS"></small></div>
-      <div class="row"><span data-i="ctl"></span> <b id="hCtl"></b> <span data-i="rng"></span> <b id="hRng"></b></div>
+      <div class="big pair"><span class="bi"><span id="hCtl"></span><small data-i="ctl"></small></span><span class="bi"><span id="hExp"></span><small data-i="expS"></small></span></div>
+      <div class="row"><span data-i="rng"></span> <b id="hRng"></b></div>
       <div class="bar"><i id="hBar"></i></div></div>
     <div class="card" id="cS"><h2 data-i="sT"></h2>
-      <div class="big"><span id="sExp"></span><small data-i="expS"></small></div>
-      <div class="row"><span data-i="ctl"></span> <b id="sCtl"></b> <span data-i="rng"></span> <b id="sRng"></b></div>
+      <div class="big pair"><span class="bi"><span id="sCtl"></span><small data-i="ctl"></small></span><span class="bi"><span id="sExp"></span><small data-i="expS"></small></span></div>
+      <div class="row"><span data-i="rng"></span> <b id="sRng"></b></div>
       <div class="bar"><i id="sBar"></i></div></div>
     <div class="card" id="cG"><h2 data-i="gT"></h2>
-      <div class="big"><span id="gExp"></span><small data-i="expG"></small></div>
-      <div class="row"><span data-i="maj"></span> <b id="gCtl"></b></div>
+      <div class="big pair"><span class="bi"><span id="gCtl"></span><small data-i="maj"></small></span><span class="bi"><span id="gExp"></span><small data-i="expG"></small></span></div>
       <div class="bar"><i id="gBar"></i></div></div>
   </section>
 
