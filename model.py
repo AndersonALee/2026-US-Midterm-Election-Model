@@ -12,8 +12,8 @@ SEN_ST='AL AK AR CO DE FL GA ID IL IA KS KY LA ME MA MI MN MS MT NE NH NJ NM NC 
 GOV_ST='AL AK AZ AR CA CO CT FL GA HI ID IL IA KS ME MD MA MI MN NE NV NH NM NY OH OK OR PA RI SC SD TN TX VT WI WY'.split()
 SEN_TR={k:TRM[k] for k in SEN_ST}
 GOV_TR={k:TRM[k] for k in GOV_ST}
-# Yankee-Republican incumbents (VT Scott, NH Ayotte): blend 2024 presidential margin with 2024 gubernatorial margin (Trump-side +; approximate: VT gov ~R+49, NH gov ~R+9)
-GOV_TR['VT']=round((TRM['VT']+49)/2,1);GOV_TR['NH']=round((TRM['NH']+9)/2,1)
+# Yankee-Republican incumbents (VT Scott, NH Ayotte): blend 20% 2024 presidential margin + 80% 2024 gubernatorial margin (Trump-side +; approximate: VT gov ~R+49, NH gov ~R+9)
+GOV_TR['VT']=round(.2*TRM['VT']+.8*49,1);GOV_TR['NH']=round(.2*TRM['NH']+.8*9,1)
 SEN_ADD,GOV_ADD,GOV_THR=34,6,26  # Dem seats not up in 2026 (Senate 34 of 47; governors 6 of 24); governors majority = 26 of 50
 NM={'AK':'Alaska','OH':'Ohio','TX':'Texas','IA':'Iowa','KS':'Kansas','ME':'Maine','MI':'Michigan','GA':'Georgia','NC':'N. Carolina','NH':'N. Hampshire','MN':'Minnesota','NE':'Nebraska','SC':'S. Carolina','FL':'Florida','LA':'Louisiana','NV':'Nevada','WI':'Wisconsin'}
 def wavg(parts):
