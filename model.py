@@ -70,35 +70,32 @@ diffs.sort(reverse=True)
 res_extra['vs_cook']=[(k,c,r) for d,k,c,r in diffs if d>=2][:5]
 res.update(res_extra)
 json.dump(res,open('result.json','w'));print(json.dumps(res))
-hp='history.csv';hd='date,N,house_mean,house_ctl,house_lo,house_hi,fpo_only,senate_mean,senate_ctl,senate_lo,senate_hi,gov_mean,gov_maj'
-old=[l for l in open(hp).read().splitlines()[1:] if not l.startswith(res['date']+',')] if os.path.exists(hp) else []
-row=','.join(str(x) for x in [res['date'],N,res['house']['mean'],res['house']['ctl'],res['house']['lo'],res['house']['hi'],res['house']['fpo_only'],res['senate']['mean'],res['senate']['ctl'],res['senate']['lo'],res['senate']['hi'],res['gov']['mean'],res['gov']['maj']])
-open(hp,'w').write('\n'.join([hd]+old+[row])+'\n')
-# site data (data.json for the web page) and history.json
-prev={}
-if len(sys.argv)>2 and os.path.exists(sys.argv[2]):
-    for r in json.load(open(sys.argv[2]))['H'].split(';'):
-        a=r.split(',');prev[a[0]]=int(a[5])
+# site data + history, written into the repo checkout given as argv[2] (default ./site); history.json is the persistent store
+RD=sys.argv[2] if len(sys.argv)>2 else 'site';os.makedirs(RD,exist_ok=True)
+def ld(p,dflt):
+    try: return json.load(open(os.path.join(RD,p)))
+    except Exception: return dflt
+oldd=ld('data.json',{});prev={}
+for r in oldd.get('H','').split(';'):
+    if r: a_=r.split(',');prev[a_[0]]=int(a_[5])
 def terms(i):
     if i in prev: return prev[i]
-    s=i[:2]
-    return 1 if s in('TX','FL','OH','NC','MO','CA','UT','LA','TN') else 2 if s in('AL','NY','GA') else 3
+    s_=i[:2]
+    return 1 if s_ in('TX','FL','OH','NC','MO','CA','UT','LA','TN') else 2 if s_ in('AL','NY','GA') else 3
 CODE={'Toss Up':'T','Lean D':'l','Lean R':'L','Likely D':'k','Likely R':'K'}
-cc={v:k for k,v in CK.items()}
 def ckcode(p):
     for n,v in CK.items():
         if abs(v-p)<1e-9: return CODE[n]
     return ''
-hs=sorted(H,key=lambda x:abs(x['comp']-.5))
-top=hs[:66];rest=hs[66:]
+hs=sorted(H,key=lambda x:abs(x['comp']-.5));top=hs[:66];rest=hs[66:]
 fixed=sum(1 for x in rest if x['comp']>.5)
 Hs=';'.join(','.join(str(v) for v in [x['id'],round(x['f'],3),-1 if x['pm'] is None else round(x['pm'],3),ckcode(x['ck']) if x['id'] in cookh else '',round(max(-30,min(30,BASE[x['id']])),1),terms(x['id'])]) for x in sorted(top,key=lambda x:x['id']))
 Ss=[[x['id'],round(x['f'],3),None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cooks'].get(x['id']),''),SEN_TR[x['id']]] for x in S]
 Gs=[[x['id'],None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cookg'].get(x['id']),''),GOV_TR[x['id']]] for x in G]
-os.makedirs('site',exist_ok=True)
-json.dump(dict(asof=res['date'],N0=N,fixed_dem=fixed,sen_add=47,n_listed=66,rho_h=.5,H=Hs,S=Ss,G=Gs),open('site/data.json','w'),separators=(',',':'))
-hist=[dict(zip(hd.split(','),[l.split(',')[0]]+[float(v) for v in l.split(',')[1:]])) for l in open(hp).read().splitlines()[1:]]
-json.dump(hist,open('site/history.json','w'),separators=(',',':'))
+json.dump(dict(asof=res['date'],N0=N,fixed_dem=fixed,sen_add=47,n_listed=66,rho_h=.5,H=Hs,S=Ss,G=Gs),open(os.path.join(RD,'data.json'),'w'),separators=(',',':'))
+hist=[r for r in ld('history.json',[]) if r.get('date')!=res['date']]
+hist.append(dict(date=res['date'],N=N,house_mean=res['house']['mean'],house_ctl=res['house']['ctl'],house_lo=res['house']['lo'],house_hi=res['house']['hi'],fpo_only=res['house']['fpo_only'],senate_mean=res['senate']['mean'],senate_ctl=res['senate']['ctl'],senate_lo=res['senate']['lo'],senate_hi=res['senate']['hi'],gov_mean=res['gov']['mean'],gov_maj=res['gov']['maj']))
+json.dump(hist,open(os.path.join(RD,'history.json'),'w'),separators=(',',':'))
 # image
 bg,panel,ink,mute='#0f1218','#171b24','#eceff5','#9aa3b2';D,R='#6aa3ff','#ff7a6e'
 fig=plt.figure(figsize=(12,9),facecolor=bg)
