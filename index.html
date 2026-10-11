@@ -71,6 +71,7 @@ th.n{text-align:right}
 @media (max-width:520px){.big{font-size:2rem}.strip{width:140px}}
 @media (prefers-reduced-motion:no-preference){.bar i,.cb i{transition:width .25s}}
 
+.rgn{font-size:11px;font-weight:400;color:var(--mute);margin-top:1px;line-height:1.2}
 .hd{display:flex;gap:12px;justify-content:space-between;align-items:flex-start}
 .hd .chip{white-space:nowrap}
 .rt{display:inline-block;padding:1px 8px;border-radius:3px;font-size:.75rem;font-weight:600;white-space:nowrap;border:1px solid transparent}
@@ -378,7 +379,7 @@ function raceList(){
   L.sort((a,b)=>{if(rlSort==='name')return (a.name<b.name?-1:1)*(rlDir>0?1:-1);const va=key(a),vb=key(b);if(va==null&&vb==null)return 0;if(va==null)return 1;if(vb==null)return -1;return (vb-va)*rlDir});const tot=L.length;L=L.slice(0,150);
   const cell=(a,p,cls,fb)=>`<div class="${cls}"><div class="cn">${a?(a[2]?'* ':'')+a[1]:fb}</div><div class="pp"><b>${plb(p).replace(t('oo'),'')}</b>${t('oo')}</div><div class="bar" style="width:${Math.max(4,Math.round(p*100))}%"></div></div>`;
   $("rlrows").innerHTML=L.map(r=>{const lean=r.lean==null?'–':(r.tr?(r.lean<0?'R+':'D+'):(r.lean>0?'D+':'R+'))+Math.abs(r.lean).toFixed(1);const side=r.lean==null?'':((r.tr?r.lean<0:r.lean<0)?'R':'D');const [n,c]=ratingOf(r.comp);
-    return `<div class="rlr${tb==='H'?' go':''}"${tb==='H'?` data-go="${r.id}"`:''}><div style="font-weight:500">${r.name}</div><div class="rlc">${cell(r.dn,r.comp,'D',t('rlDem'))}${cell(r.rn,1-r.comp,'R',t('rlRep'))}</div><div class="rlm ${side}">${lean}</div><div><span class="rt ${c}">${t(n)}</span></div>${strip(r)}</div>`}).join("")||`<div class="empty">${t('rlNone')}</div>`;
+    return `<div class="rlr${tb==='H'?' go':''}"${tb==='H'?` data-go="${r.id}"`:''}><div style="font-weight:500">${r.name}${tb==='H'&&RG[r.id]?`<div class="rgn">${RG[r.id][lang==='zh'?1:0]}</div>`:''}</div><div class="rlc">${cell(r.dn,r.comp,'D',t('rlDem'))}${cell(r.rn,1-r.comp,'R',t('rlRep'))}</div><div class="rlm ${side}">${lean}</div><div><span class="rt ${c}">${t(n)}</span></div>${strip(r)}</div>`}).join("")||`<div class="empty">${t('rlNone')}</div>`;
   if(tot>150)$("rlrows").insertAdjacentHTML("beforeend",`<div class="empty">… ${tot-150} more, use the search box</div>`);
 }
 const norm_=x=>x.toLowerCase().replace(/[\s\-\.]/g,"");
@@ -429,6 +430,7 @@ function trend(){
   else{const [l,h]=rg(['gov_mean']);c1=`<div class="card"><h2>${t('trG')}</h2>${lines(R,[{k:'gov_mean',c:'var(--dem)'}],Math.max(0,l),Math.min(50,h))}</div>`;c2=`<div class="card"><h2>${t('trC')}</h2>${lines(R,[{k:'gc',c:'var(--dem)'}],0,100)}</div>`}
   el.innerHTML=`<div class="chartwrap">${c1}${c2}</div>`;
 }
+let RG={};
 async function init(){
   try{lang=localStorage.getItem('lang')||'en'}catch(e){lang='en'}
   try{D0=await (await fetch('data.json',{cache:'no-store'})).json()}catch(e){document.body.insertAdjacentHTML('afterbegin','<p style="padding:20px">data.json could not be loaded. Open this page through a web server.</p>');return}
@@ -437,6 +439,7 @@ async function init(){
   try{CN=await (await fetch('cands.json',{cache:'no-cache'})).json()}catch(e){CN=null}
   try{window.PVI=await (await fetch('pvi.json',{cache:'no-cache'})).json()}catch(e){window.PVI={}}
   try{CD=await (await fetch('cd.json')).json()}catch(e){CD=null}
+  try{RG=await (await fetch('regions.json')).json()}catch(e){RG={}}
   try{MP=await (await fetch('map.json')).json()}catch(e){MP={p:{},l:{}}}
   const lst=H.map(h=>({id:h.id,st:h.id.slice(0,2),h}));
   AL=lst.concat((D0.A||'').split(';').filter(Boolean).map(r=>{const a=r.split(',');return{id:a[0],st:a[0].slice(0,2),c:+a[1],base:a[2]===undefined?null:+a[2]}})).sort((a,b)=>a.id<b.id?-1:1);
