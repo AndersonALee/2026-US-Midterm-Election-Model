@@ -4,6 +4,10 @@ from scipy.stats import norm
 import matplotlib;matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 BASE=dict((a.split(':')[0],float(a.split(':')[1])) for a in open('base.txt').read().strip().split(','))
+RD0=sys.argv[2] if len(sys.argv)>2 else 'site'
+# House fundamentals: Cook 2026 PVI (relative to the nation) converted to the 2024-margin scale used with SH (nation was R+1.5)
+PV=json.load(open(os.path.join(RD0,'pvi.json')))
+BASE=dict((k,PV[k]-1.5) for k in BASE)
 inp=json.load(open(sys.argv[1]));N=inp.get('N',7.8);SH=N+1.5
 CK={'Toss Up':.5,'Lean D':.7,'Lean R':.3,'Likely D':.88,'Likely R':.12,'Solid D':.97,'Solid R':.03}
 # 2024 Trump margin (points, + = Trump) for every state with a 2026 race
@@ -118,8 +122,8 @@ def ckcode(p):
     return ''
 hs=sorted(H,key=lambda x:abs(x['comp']-.5));top=hs[:66];rest=hs[66:]
 fixed=sum(1 for x in rest if x['comp']>.5)
-As=';'.join('%s,%s,%s'%(x['id'],round(x['comp'],3),round(max(-30,min(30,BASE[x['id']])),1)) for x in sorted(rest,key=lambda x:x['id']))
-Hs=';'.join(','.join(str(v) for v in [x['id'],round(x['f'],3),-1 if x['pm'] is None else round(x['pm'],3),ckcode(x['ck']) if x['id'] in cookh else '',round(max(-30,min(30,BASE[x['id']])),1),terms(x['id'])]) for x in sorted(top,key=lambda x:x['id']))
+As=';'.join('%s,%s,%s'%(x['id'],round(x['comp'],3),round(max(-30,min(30,PV[x['id']])),1)) for x in sorted(rest,key=lambda x:x['id']))
+Hs=';'.join(','.join(str(v) for v in [x['id'],round(x['f'],3),-1 if x['pm'] is None else round(x['pm'],3),ckcode(x['ck']) if x['id'] in cookh else '',round(max(-30,min(30,PV[x['id']])),1),terms(x['id'])]) for x in sorted(top,key=lambda x:x['id']))
 Ss=[[x['id'],round(x['f'],3),None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cooks'].get(x['id']),''),SEN_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa']] for x in S]
 Gs=[[x['id'],None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cookg'].get(x['id']),''),GOV_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa']] for x in G]
 json.dump(dict(asof=res['date'],N0=N,fixed_dem=fixed,sen_add=SEN_ADD,gov_add=GOV_ADD,gov_thr=GOV_THR,n_listed=66,rho_h=.5,H=Hs,A=As,S=Ss,G=Gs),open(os.path.join(RD,'data.json'),'w'),separators=(',',':'))
