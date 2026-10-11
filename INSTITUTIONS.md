@@ -19,7 +19,7 @@ const csv=t=>{const L=t.trim().split(/\r?\n/);const h=L[0].split(',');return L.s
 const ids=[...new Set([...document.querySelectorAll('iframe')].map(f=>f.src).map(s=>(s.match(/dwcdn\.net\/([A-Za-z0-9]+)\//)||[])[1]).filter(Boolean))];let H=null,S=null,lm=[];
 for(const id of ids){const base=await (await fetch('https://datawrapper.dwcdn.net/'+id+'/')).text();const vs=[...base.matchAll(new RegExp(id+'/(\\d+)/','g'))].map(m=>+m[1]);const v=vs.length?Math.max(...vs):null;if(!v)continue;const r=await fetch('https://datawrapper.dwcdn.net/'+id+'/'+v+'/dataset.csv');const t=await r.text();const hd=t.split(/\r?\n/)[0];if(/cd,/.test(hd)&&/win_prob_d/.test(hd)&&!H){H=csv(t);lm.push(r.headers.get('last-modified'))}else if(/State/.test(hd)&&/win_prob_d/.test(hd)&&!S){S=csv(t);lm.push(r.headers.get('last-modified'))}}
 const h={},s={};for(const r of H){let k=r.cd.replace('-AL','-01');const m=k.match(/^([A-Z]{2})-(\d+)$/);if(m)k=m[1]+'-'+m[2].padStart(2,'0');const p=parseFloat(r.win_prob_d)/100;if(p>=.03&&p<=.97)h[k]=Math.round(p*1000)/1000}
-for(const r of S){const k=ST[r.State];if(k)s[k]=Math.round(parseFloat(r.win_prob_d)/10)/1000*1}
+for(const r of S){const k=ST[r.State];if(k)s[k]=Math.round(parseFloat(r.win_prob_d)*10)/1000}
 JSON.stringify({h,s,asof:new Date(lm.map(x=>Date.parse(x)).sort()[0]).toISOString().slice(0,10),nH:H.length,nS:S.length})
 ```
 Checks: nH 435, nS 35 (Split Ticket has no governor forecast). Drop nH and nS from the stored JSON. If the House chart cannot be found, leave Split Ticket out.

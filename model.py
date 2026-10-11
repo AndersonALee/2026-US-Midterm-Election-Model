@@ -1,4 +1,4 @@
-import json,sys,datetime,os
+import json,sys,datetime,os,re
 import numpy as np
 from scipy.stats import norm
 import matplotlib;matplotlib.use('Agg')
@@ -20,70 +20,136 @@ GOV_TR={k:TRM[k] for k in GOV_ST}
 GOV_TR['VT']=round(.2*TRM['VT']+.8*49,1);GOV_TR['NH']=round(.2*TRM['NH']+.8*9,1)
 SEN_ADD,GOV_ADD,GOV_THR=34,6,26  # Dem seats not up in 2026 (Senate 34 of 47; governors 6 of 24); governors majority = 26 of 50
 NM={'AK':'Alaska','OH':'Ohio','TX':'Texas','IA':'Iowa','KS':'Kansas','ME':'Maine','MI':'Michigan','GA':'Georgia','NC':'N. Carolina','NH':'N. Hampshire','MN':'Minnesota','NE':'Nebraska','SC':'S. Carolina','FL':'Florida','LA':'Louisiana','NV':'Nevada','WI':'Wisconsin'}
-def wavg(parts):
-    a=b=0
-    for v,w in parts:
-        if v is not None: a+=v*w;b+=w
-    return a/b
-fund_w=.15;kh=(1-fund_w)/.75;k=(1-fund_w)/.85
+# ---------------- v2: four modules (fund, poll, pm, institution) combined in probit space ----------------
+SIG=6.0                                   # margin scale (points): z = margin / SIG
+ELECTION=datetime.date(2026,11,3)
+WB={'poll':.40,'inst':.30,'pm':.15,'fund':.15}       # base weights (Senate, governor)
+WBH={'inst':.60,'pm':.25,'fund':.15}                 # base weights (House: no polls)
+def Z(p): return float(norm.ppf(min(max(p,.005),.995)))
+# Cook category -> expected Dem margin (points); the expert ratings enter the institution module as margins
+CKM={'Toss Up':0,'Tilt D':2,'Tilt R':-2,'Lean D':4,'Lean R':-4,'Likely D':8,'Likely R':-8,'Solid D':15,'Solid R':-15}
+def cook_p(cat): return float(norm.cdf(CKM[cat]/SIG)) if cat in CKM else None
+INST_W={'fpo':.25,'st':.20,'ddhq':.20,'cook':.20,'vh':.15}
+INSTX=inp.get('inst',{})
+def src_age_mult(name):
+    a=(INSTX.get(name) or {}).get('asof')
+    if not a: return 1.0
+    d=(TODAY-datetime.date.fromisoformat(a)).days
+    return 1.0 if d<=7 else max(.5,1-(d-7)*.5/23)
+def inst_module(srcs):
+    # srcs: {name: probability or None}. Weighted probit average; any source further than 1.0 from the weighted median is pulled to median +/- 1.0 (guards scrape errors)
+    items=[(n,Z(p),INST_W[n]*(src_age_mult(n) if n in('st','ddhq','vh') else 1.0)) for n,p in srcs.items() if p is not None]
+    if not items: return None,0.0,0
+    zs=sorted(items,key=lambda x:x[1]);tot=sum(w for _,_,w in zs);acc=0;med=zs[-1][1]
+    for n,z,w in zs:
+        acc+=w
+        if acc>=tot/2: med=z;break
+    zz=[(n,max(med-1.0,min(med+1.0,z)),w) for n,z,w in items]
+    zbar=sum(z*w for _,z,w in zz)/sum(w for _,_,w in zz);k=len(items)
+    return zbar,min(1.0,.5+.25*k),k
+# --- poll module: own weighted average of the individual polls ---
+EXCL=('big data poll','patriot polling')
+TIER_A=['nytimes','nyt','siena','marist','emerson','unh','university of new hampshire','wall street journal','wsj','abc','washington post','ipsos','atlasintel','atlas intel']
+TIER_C=['insideradvantage','trafalgar','rasmussen','victory insights','activote','socal strategies','mclaughlin']
+TIER_B=['fox','marquette','suffolk','quinnipiac','cnn','ssrs','mason-dixon','morning consult','yougov','cygnal','quantus','data for progress','change research','echelon','co/efficient','susquehanna','remington','public policy polling','ppp','civiqs','research co','east carolina','high point','st. anselm','selzer','mitchell','siena']
+def pname(s): return s.replace('*','').strip().lower()
+def tier(name):
+    n=pname(name)
+    if any(x in n for x in EXCL): return 0.0
+    if any(x in n for x in TIER_C): return .5
+    if any(x in n for x in ('nytimes','ny times','siena','marist','emerson','unh','wall street','wsj','abc','washington post','ipsos','atlas')): return 1.0
+    if any(x in n for x in TIER_B): return .8
+    return .65
+def poll_module(rec,xp_extra=()):
+    if not rec: return None
+    polls=[list(p) for p in rec.get('polls',[])]
+    for p in rec.get('xp',[]):
+        polls.append([p[0],p[1],p[2],p[3],(p[5] if len(p)>5 else None),(p[6] if len(p)>6 else 'LV')])
+    days_left=(ELECTION-TODAY).days;hl=7.0 if days_left<=21 else 10.0
+    rows=[]
+    for p in sorted(polls,key=lambda p:p[1] or '',reverse=True):
+        if not p[1] or p[2] is None or p[3] is None: continue
+        age=(TODAY-datetime.date.fromisoformat(p[1])).days
+        if age<0 or age>45: continue
+        t=tier(p[0])
+        if t==0: continue
+        pop={'LV':1.0,'RV':.85,'A':.6}.get(p[5] if len(p)>5 else '',.85)
+        sp=.4 if re.search(r'\((R|D)\)',p[0]) else 1.0
+        rows.append(dict(po=pname(p[0]),age=age,rec=.5**(age/hl),t=t,pop=pop,sp=sp,n=(p[4] if len(p)>4 and p[4] else 600),d=p[2],r=p[3]))
+    if not rows: return None
+    seen={}
+    for x in rows:
+        c=seen.get(x['po'],0);x['dd']=[1.0,.5,.25][min(c,2)];seen[x['po']]=c+1
+    for x in rows: x['w']=x['rec']*x['t']*x['pop']*x['sp']*x['dd']*min(1.5,max(.6,(x['n']/600)**.5))
+    W=sum(x['w'] for x in rows)
+    if W<=0: return None
+    dd=sum(x['w']*x['d'] for x in rows)/W;rr=sum(x['w']*x['r'] for x in rows)/W
+    neff=sum(x['rec']*x['t']*x['pop']*x['sp']*x['dd']*x['n'] for x in rows)
+    sys_=3.0 if days_left<=21 else 3.5
+    sd=(sys_**2+(120/max(neff,50)**.5)**2)**.5
+    rel=min(1.0,(4.3/sd)**2)
+    last=max(p[1] for p in polls if p[1] and p[2] is not None)
+    return dict(z=(dd-rr)/SIG,rel=rel,pa=[round(dd,1),round(rr,1),len(rows),last],p=float(norm.cdf((dd-rr)/SIG)))
+def combine(mods,base):
+    # mods: {name:(z,reliability)} ; poll share capped at 50%
+    ws={k:base[k]*r for k,(z,r) in mods.items() if z is not None and r>0 and k in base}
+    if not ws: return .5,{}
+    if 'poll' in ws:
+        oth=sum(v for k,v in ws.items() if k!='poll')
+        if oth>0: ws['poll']=min(ws['poll'],oth)
+    T=sum(ws.values());zb=sum(mods[k][0]*w for k,w in ws.items())/T
+    var=sum(w*(mods[k][0]-zb)**2 for k,w in ws.items())/T
+    return float(norm.cdf(zb/(1+.5*var)**.5)),{k:round(w/T,3) for k,w in ws.items()}
+fund_w=.15
 RD=sys.argv[2] if len(sys.argv)>2 else 'site'
 try: POLLS=json.load(open(os.path.join(RD,'polls.json')))
 except Exception: POLLS={'S':{},'G':{}}
 TODAY=datetime.date.today()
-def poll_sig(r):
-    # RealClearPolling average -> Dem win probability. Returns (prob, weight multiplier, [avgD,avgR,n,last]) or (None,0,None)
-    if not r: return None,0,None
-    if r.get('aD') is not None: dd,rr=r['aD'],r['aR']
-    else:
-        ps=[p for p in r.get('polls',[]) if p[1] and 0<=(TODAY-datetime.date.fromisoformat(p[1])).days<=60]
-        if not ps: return None,0,None
-        dd=sum(p[2] for p in ps)/len(ps);rr=sum(p[3] for p in ps)/len(ps)
-    last=r['last'];n=r['n']
-    # xp = extra polls from the @IAPolls2022 feed that are not yet in the RCP list: [pollster, date, D, R, url]; folded into the average as extra polls
-    xp=[p for p in r.get('xp',[]) if p[1] and 0<=(TODAY-datetime.date.fromisoformat(p[1])).days<=60]
-    if xp:
-        dd=(dd*n+sum(p[2] for p in xp))/(n+len(xp));rr=(rr*n+sum(p[3] for p in xp))/(n+len(xp));n+=len(xp);last=max([last]+[p[1] for p in xp])
-    age=(TODAY-datetime.date.fromisoformat(last)).days
-    mult=1.0 if age<=14 else max(.4,1-(age-14)*.6/46)
-    if n<3: mult*=.75
-    sg=6.0 if n>=3 else 7.5
-    return float(norm.cdf((dd-rr)/sg)),round(mult,2),[round(dd,1),round(rr,1),n,last]
-# weights at the default 15% fundamentals weight (they scale with the slider): Senate Polls .30 FPO .25 PM .20 Cook .10; Governor Polls .43 PM .28 Cook .14 (no FPO); House FPO .40 PM .28 Cook .17
 cookh={}
 for cat,keys in inp['cookh'].items():
-    for key in keys: cookh[key]=CK[cat]
+    for key in keys: cookh[key]=cat
 # House
 H=[]
-fpo=inp['fpo'];pmh=inp['pmh']
+fpo=inp['fpo'];pmh=inp['pmh'];ih=lambda n:(INSTX.get(n) or {}).get('h',{})
 for key,b in BASE.items():
-    f=fpo.get(key)
-    pm=pmh.get(key)
+    f=fpo.get(key);pm=pmh.get(key)
     if f is None:
-        # FPO lists only races between 0.5% and 99.5%; a missing race is a near-certain one. Direction: Polymarket, else Cook, else district lean
+        # FPO lists only races between 0.5% and 99.5%; a missing race is a near-certain one. Direction: Polymarket, else Cook, else other institutions, else district lean
+        others=[v for v in (ih('ddhq').get(key),ih('st').get(key),ih('vh').get(key)) if v is not None]
         if pm is not None: d_=pm>.5
-        elif key in cookh: d_=cookh[key]>.5
+        elif key in cookh: d_=CKM[cookh[key]]>0
+        elif others: d_=sum(others)/len(others)>.5
         else: d_=b>0
         f=.999 if d_ else .001
-    fnone=False
-    c=cookh.get(key,.97 if f>.5 else .03)
+    cat=cookh.get(key) or ('Solid D' if f>.5 else 'Solid R')
+    c=cook_p(cat)
     fu=float(norm.cdf((b+SH)/5.5))
-    comp=wavg([(None if fnone else f,.35*kh),(pm,.25*kh),(c,.15*kh),(fu,fund_w)])
-    H.append(dict(id=key,f=f,fn=fnone,pm=pm,ck=c,fund=fu,comp=comp))
+    iz,ir,ik=inst_module(dict(fpo=f,st=ih('st').get(key),ddhq=ih('ddhq').get(key),vh=ih('vh').get(key),cook=c))
+    comp,wt=combine(dict(inst=(iz,ir),pm=(None if pm is None else Z(pm),1.0),fund=(Z(fu),1.0)),WBH)
+    H.append(dict(id=key,f=f,fn=False,pm=pm,ck=c,fund=fu,comp=comp,inst=None if iz is None else float(norm.cdf(iz)),ik=ik,wt=wt,
+                  src=dict(fpo=f,st=ih('st').get(key),ddhq=ih('ddhq').get(key),vh=ih('vh').get(key),cook=c)))
+def race(kind,st,tr,pm,cat,fpo_p,polls_rec):
+    fu=float(norm.cdf((-tr+SH)/6.5))
+    k=kind.lower()
+    isrc=(INSTX.get('st') or {}).get('s',{}) if kind=='S' else {}
+    src=dict(fpo=fpo_p,st=(isrc.get(st) if kind=='S' else None),ddhq=((INSTX.get('ddhq') or {}).get('s' if kind=='S' else 'g',{}).get(st)),vh=((INSTX.get('vh') or {}).get('s' if kind=='S' else 'g',{}).get(st)),cook=cook_p(cat) if cat else None)
+    iz,ir,ik=inst_module(src)
+    if iz is None:  # no institutional view at all: fall back to the lean
+        iz,ir,ik=Z(.97 if (pm if pm is not None else fu)>.5 else .03),.5,0
+    pmd=poll_module(polls_rec)
+    mods=dict(inst=(iz,ir),pm=(None if pm is None else Z(pm),1.0),fund=(Z(fu),1.0))
+    if pmd: mods['poll']=(pmd['z'],pmd['rel'])
+    comp,wt=combine(mods,WB)
+    return dict(id=st,f=fpo_p,pm=pm,ck=src['cook'],fund=fu,pp=(pmd['p'] if pmd else None),pw=(round(pmd['rel'],2) if pmd else 0),pa=(pmd['pa'] if pmd else None),inst=float(norm.cdf(iz)),ik=ik,comp=comp,wt=wt,src=src)
 S=[]
 for st,tr in SEN_TR.items():
     f=inp['sen'].get(st)
     if f is None: f=.999 if tr<0 else .001
-    pm=inp['pms'].get(st);cat=inp['cooks'].get(st)
-    c=CK[cat] if cat else (.97 if f>.5 else .03)
-    fu=float(norm.cdf((-tr+SH)/6.5))
-    pp,pw,pa=poll_sig(POLLS['S'].get(st))
-    S.append(dict(id=st,f=f,pm=pm,ck=c,fund=fu,pp=pp,pw=pw,pa=pa,comp=wavg([(f,.25*k),(pm,.20*k),(c,.10*k),(pp,.30*k*pw),(fu,fund_w)])))
+    S.append(race('S',st,tr,inp['pms'].get(st),inp['cooks'].get(st),f,POLLS['S'].get(st)))
 G=[]
 for st,tr in GOV_TR.items():
-    pm=inp['pmg'].get(st);cat=inp['cookg'].get(st);fu=float(norm.cdf((-tr+SH)/6.5))
-    c=CK[cat] if cat else (.97 if (pm if pm is not None else fu)>.5 else .03)
-    pp,pw,pa=poll_sig(POLLS['G'].get(st))
-    G.append(dict(id=st,pm=pm,ck=c,fund=fu,pp=pp,pw=pw,pa=pa,comp=wavg([(pm,.28*k),(c,.14*k),(pp,.43*k*pw),(fu,fund_w)])))
+    G.append(race('G',st,tr,inp['pmg'].get(st),inp['cookg'].get(st),None,POLLS['G'].get(st)))
+if os.environ.get('DEBUG_DUMP'): json.dump({'S':S,'G':G,'H':H},open(os.environ['DEBUG_DUMP'],'w'),default=float)
 rng=np.random.default_rng(7)
 def sim(ps,rho,add,thr,n=20000):
     z=norm.ppf(np.clip(ps,1e-6,1-1e-6));S_=rng.standard_normal((n,1));e=rng.standard_normal((n,len(ps)))
@@ -119,9 +185,9 @@ def _chk(name,src,comp):
     if len(v)>=2:
         sp=max(x for k,x in v)-min(x for k,x in v)
         if sp>=.30: fl.append((sp,name+' '+' / '.join('%s %d'%(k,round(x*100)) for k,x in v)+' / model %d'%round(comp*100)))
-for x in H: _chk(x['id'],[('FPO',inp['fpo'].get(x['id'])),('PM',x['pm'])],x['comp'])
-for x in S: _chk('Senate '+x['id'],[('FPO',inp['sen'].get(x['id'])),('PM',x['pm']),('Polls',x['pp'])],x['comp'])
-for x in G: _chk('Gov '+x['id'],[('PM',x['pm']),('Polls',x['pp'])],x['comp'])
+for x in H: _chk(x['id'],[('Inst',x['inst']),('PM',x['pm'])],x['comp'])
+for x in S: _chk('Senate '+x['id'],[('Inst',x['inst']),('PM',x['pm']),('Polls',x['pp'])],x['comp'])
+for x in G: _chk('Gov '+x['id'],[('Inst',x['inst']),('PM',x['pm']),('Polls',x['pp'])],x['comp'])
 res_extra['flags']=[t for sp,t in sorted(fl,reverse=True)[:8]]
 res_extra['n_flags']=len(fl)
 res.update(res_extra)
@@ -138,7 +204,7 @@ def terms(i):
     if i in prev: return prev[i]
     s_=i[:2]
     return 1 if s_ in('TX','FL','OH','NC','MO','CA','UT','LA','TN') else 2 if s_ in('AL','NY','GA') else 3
-CODE={'Toss Up':'T','Lean D':'l','Lean R':'L','Likely D':'k','Likely R':'K','Solid D':'S','Solid R':'s'}
+CODE={'Toss Up':'T','Lean D':'l','Lean R':'L','Likely D':'k','Likely R':'K','Solid D':'S','Solid R':'s','Tilt D':'t','Tilt R':'u'}
 def ckcode(p):
     for n,v in CK.items():
         if abs(v-p)<1e-9: return CODE[n]
@@ -146,10 +212,11 @@ def ckcode(p):
 hs=sorted(H,key=lambda x:abs(x['comp']-.5));top=hs[:66];rest=hs[66:]
 fixed=sum(1 for x in rest if x['comp']>.5)
 As=';'.join('%s,%s,%s'%(x['id'],round(x['comp'],3),round(max(-30,min(30,PV[x['id']])),1)) for x in sorted(rest,key=lambda x:x['id']))
-Hs=';'.join(','.join(str(v) for v in [x['id'],-1 if x['fn'] else round(x['f'],3),-1 if x['pm'] is None else round(x['pm'],3),ckcode(x['ck']) if x['id'] in cookh else '',round(max(-30,min(30,PV[x['id']])),1),terms(x['id'])]) for x in sorted(top,key=lambda x:x['id']))
-Ss=[[x['id'],round(x['f'],3),None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cooks'].get(x['id']),''),SEN_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa']] for x in S]
-Gs=[[x['id'],None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cookg'].get(x['id']),''),GOV_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa']] for x in G]
-json.dump(dict(asof=res['date'],disc=DISC,ts=__import__('datetime').datetime.now(__import__('datetime').timezone.utc).strftime('%Y-%m-%dT%H:%MZ'),N0=N,fixed_dem=fixed,sen_add=SEN_ADD,gov_add=GOV_ADD,gov_thr=GOV_THR,n_listed=66,rho_h=.5,H=Hs,A=As,S=Ss,G=Gs,C={x['id']:round(x['comp'],3) for x in H},SC={x['id']:round(x['comp'],3) for x in S},GC={x['id']:round(x['comp'],3) for x in G}),open(os.path.join(RD,'data.json'),'w'),separators=(',',':'))
+q=lambda v:'' if v is None else round(v,3)
+Hs=';'.join(','.join(str(v) for v in [x['id'],-1 if x['inst'] is None else round(x['inst'],3),-1 if x['pm'] is None else round(x['pm'],3),CODE[cookh[x['id']]] if x['id'] in cookh else '',round(max(-30,min(30,PV[x['id']])),1),terms(x['id']),q(x['src']['fpo']),q(x['src']['st']),q(x['src']['ddhq']),q(x['src']['vh'])]) for x in sorted(top,key=lambda x:x['id']))
+Ss=[[x['id'],round(x['inst'],3),None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cooks'].get(x['id']),''),SEN_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa'],{k:round(v,3) for k,v in x['src'].items() if v is not None and k!='cook'}] for x in S]
+Gs=[[x['id'],None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cookg'].get(x['id']),''),GOV_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa'],round(x['inst'],3),{k:round(v,3) for k,v in x['src'].items() if v is not None and k!='cook'}] for x in G]
+json.dump(dict(asof=res['date'],disc=DISC,ts=__import__('datetime').datetime.now(__import__('datetime').timezone.utc).strftime('%Y-%m-%dT%H:%MZ'),N0=N,v=2,wb=dict(WB),wbh=dict(WBH),inst_asof={k:(INSTX.get(k) or {}).get('asof') for k in ('ddhq','st','vh')},fixed_dem=fixed,sen_add=SEN_ADD,gov_add=GOV_ADD,gov_thr=GOV_THR,n_listed=66,rho_h=.5,H=Hs,A=As,S=Ss,G=Gs,C={x['id']:round(x['comp'],3) for x in H},SC={x['id']:round(x['comp'],3) for x in S},GC={x['id']:round(x['comp'],3) for x in G}),open(os.path.join(RD,'data.json'),'w'),separators=(',',':'))
 hist=[r for r in ld('history.json',[]) if r.get('date')!=res['date']]
 hist.append(dict(date=res['date'],N=N,house_mean=res['house']['mean'],house_ctl=res['house']['ctl'],house_lo=res['house']['lo'],house_hi=res['house']['hi'],fpo_only=res['house']['fpo_only'],senate_mean=res['senate']['mean'],senate_ctl=res['senate']['ctl'],senate_lo=res['senate']['lo'],senate_hi=res['senate']['hi'],gov_mean=res['gov']['mean'],gov_maj=res['gov']['maj']))
 json.dump(hist,open(os.path.join(RD,'history.json'),'w'),separators=(',',':'))
@@ -157,7 +224,7 @@ json.dump(hist,open(os.path.join(RD,'history.json'),'w'),separators=(',',':'))
 bg,panel,ink,mute='#0f1218','#171b24','#eceff5','#9aa3b2';D,R='#6aa3ff','#ff7a6e'
 fig=plt.figure(figsize=(12,9),facecolor=bg)
 fig.text(.04,.955,'2026 Midterm Seat Model',color=ink,fontsize=22,weight='bold')
-fig.text(.04,.925,f"{res['date']} · composite of FPO, Polymarket, Cook, RCP polls, fundamentals · national environment D+{N:.1f}",color=mute,fontsize=10.5)
+fig.text(.04,.925,f"{res['date']} · composite of institutions (FPO, DDHQ, Split Ticket, VoteHub, Cook), polls, Polymarket, fundamentals · national environment D+{N:.1f}",color=mute,fontsize=10.5)
 def stat(x,t,big,l1,l2):
     fig.text(x,.86,t,color=mute,fontsize=9.5);fig.text(x,.805,big,color=D,fontsize=30,weight='bold',family='monospace');fig.text(x,.775,l1,color=ink,fontsize=10);fig.text(x,.752,l2,color=mute,fontsize=9.5)
 stat(.04,'HOUSE · 218 NEEDED',f"{h['mean']:.0f}",f"Dem control {h['ctl']*100:.0f}%",f"80% range {h['lo']}–{h['hi']} seats (FPO alone {fo['mean']:.0f})")
