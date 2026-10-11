@@ -1,6 +1,8 @@
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>2026 Midterm Seat Model</title>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2026 Midterm Seat Model</title>
 <style>
-/* Layout: results-board — control bar on top, three big readouts, two seat histograms, then a sortable seat ledger. */
+
 :root{
   --bg:#f3f4f7; --panel:#ffffff; --ink:#14181f; --mute:#5b6473; --line:#d9dde5;
   --dem:#1f5fbf; --dem-soft:#dbe7fa; --rep:#c23b32; --rep-soft:#f6dcd9; --gold:#b7791f; --tick:#14181f;
@@ -17,7 +19,7 @@
   --dem:#6aa3ff; --dem-soft:#1c2c4a; --rep:#ff7a6e; --rep-soft:#4a2320; --gold:#e3a94a; --tick:#eceff5;
   --f-fpo:#6aa3ff; --f-pm:#b98aea; --f-cook:#4fd1a5; --f-fund:#f0a64a; color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;padding-inline:16px;padding-block:20px 40px}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;padding-inline:16px;padding-block:20px 40px}
 .wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 h1{font-size:1.5rem;margin:0;text-wrap:balance;letter-spacing:.01em}
 .sub{color:var(--mute);margin:2px 0 0;font-size:.85rem}
@@ -66,82 +68,90 @@ th.n{text-align:right}
 .note b{color:var(--ink)}
 @media (max-width:520px){.big{font-size:2rem}.strip{width:140px}}
 @media (prefers-reduced-motion:no-preference){.bar i,.cb i{transition:width .25s}}
-</style>
 
+.hd{display:flex;gap:12px;justify-content:space-between;align-items:flex-start}
+.hd .chip{white-space:nowrap}
+.rt{display:inline-block;padding:1px 8px;border-radius:3px;font-size:.75rem;font-weight:600;white-space:nowrap;border:1px solid transparent}
+.rt.D{--c:var(--dem);--cs:var(--dem-soft)}.rt.R{--c:var(--rep);--cs:var(--rep-soft)}
+.rt.s{background:var(--c);color:var(--bg)}.rt.l{background:var(--cs);color:var(--c)}
+.rt.n{background:transparent;border-color:var(--c);color:var(--c)}.rt.t{background:transparent;border:1px dashed var(--c);color:var(--c)}
+.rt.x{background:var(--line);color:var(--ink)}
+.empty{color:var(--mute);font-size:.85rem;padding:8px 0}
+.lg{display:flex;gap:14px;flex-wrap:wrap;font-size:.75rem;color:var(--mute);margin-top:4px}
+.lg span::before{content:"";display:inline-block;width:14px;height:3px;margin-right:5px;vertical-align:middle;background:var(--c)}
+svg .ln{fill:none;stroke-width:1.8}svg .bd{opacity:.18}
+a{color:var(--dem)}
+</style></head><body>
 <div class="wrap">
-  <header>
-    <h1>2026 Midterm Seat Model</h1>
-    <p class="sub">Data as of <span id="asof">…</span> · FPO · Polymarket · Cook · Fundamentals · Drag the sliders and seats and odds recompute instantly</p>
+  <header class="hd"><div>
+    <h1 data-i="title"></h1>
+    <p class="sub" data-i="sub"></p></div>
+    <button class="chip" id="lang" type="button">中文</button>
   </header>
 
   <section class="panel ctl" aria-label="Controls">
     <div>
-      <label for="nat">National House vote margin (Democratic lead)<output id="natO"></output></label>
+      <label for="nat"><span data-i="natL"></span><output id="natO"></output></label>
       <input id="nat" type="range" min="0" max="12" step="0.1" value="7.8">
-      <div class="hint">Default D+7.8 (average of FPO and RCP generic ballot). Moving away from 7.8 shifts the FPO, Polymarket and Cook signals by the same amount; the table shows shifted values. Fundamentals shift = this value + 1.5.</div>
+      <div class="hint" data-i="natH"></div>
     </div>
     <div>
-      <label for="fw">Fundamentals weight<output id="fwO"></output></label>
+      <label for="fw"><span data-i="fwL"></span><output id="fwO"></output></label>
       <input id="fw" type="range" min="0" max="60" step="5" value="25">
-      <div class="hint">Other signals scale proportionally: FPO 35 · Polymarket 25 · Cook 15 (governors have no FPO: PM 45 · Cook 30).</div>
+      <div class="hint" data-i="fwH"></div>
     </div>
-    <button id="rst" type="button">Reset sliders</button>
+    <button id="rst" type="button" data-i="rst"></button>
   </section>
 
   <section class="read" aria-label="Overview">
-    <div class="card"><h2>House · 218 needed</h2>
-      <div class="big"><span id="hExp"></span><small>expected Dem seats</small></div>
-      <div class="row">Control <b id="hCtl"></b> 80% range <b id="hRng"></b></div>
+    <div class="card"><h2 data-i="hT"></h2>
+      <div class="big"><span id="hExp"></span><small data-i="expS"></small></div>
+      <div class="row"><span data-i="ctl"></span> <b id="hCtl"></b> <span data-i="rng"></span> <b id="hRng"></b></div>
       <div class="bar"><i id="hBar"></i></div></div>
-    <div class="card"><h2>Senate · 51 needed</h2>
-      <div class="big"><span id="sExp"></span><small>expected Dem seats</small></div>
-      <div class="row">Control <b id="sCtl"></b> 80% range <b id="sRng"></b></div>
+    <div class="card"><h2 data-i="sT"></h2>
+      <div class="big"><span id="sExp"></span><small data-i="expS"></small></div>
+      <div class="row"><span data-i="ctl"></span> <b id="sCtl"></b> <span data-i="rng"></span> <b id="sRng"></b></div>
       <div class="bar"><i id="sBar"></i></div></div>
-    <div class="card"><h2>Governors · 8 tracked states</h2>
-      <div class="big"><span id="gExp"></span><small>expected Dem wins</small></div>
-      <div class="row">Majority (≥5) <b id="gCtl"></b></div>
+    <div class="card"><h2 data-i="gT"></h2>
+      <div class="big"><span id="gExp"></span><small data-i="expG"></small></div>
+      <div class="row"><span data-i="maj"></span> <b id="gCtl"></b></div>
       <div class="bar"><i id="gBar"></i></div></div>
   </section>
 
   <section class="chartwrap" aria-label="Seat distribution">
-    <div class="card"><h2>House: Democratic seat distribution</h2><svg id="hSvg" viewBox="0 0 400 150" role="img" aria-label="House seat distribution"></svg></div>
-    <div class="card"><h2>Senate: Democratic seat distribution</h2><svg id="sSvg" viewBox="0 0 400 150" role="img" aria-label="Senate seat distribution"></svg></div>
+    <div class="card"><h2 data-i="hD"></h2><svg id="hSvg" viewBox="0 0 400 150" role="img"></svg></div>
+    <div class="card"><h2 data-i="sD"></h2><svg id="sSvg" viewBox="0 0 400 150" role="img"></svg></div>
+  </section>
+
+  <section class="panel" id="trend">
+    <h2 style="font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 8px" data-i="trT"></h2>
+    <div id="trBody"></div>
   </section>
 
   <section class="panel">
-    <div class="tabs" role="group" aria-label="Choose chamber">
-      <button id="tH" aria-pressed="true">House</button>
-      <button id="tS" aria-pressed="false">Senate</button>
-      <button id="tG" aria-pressed="false">Governor</button>
+    <div class="tabs" role="group" aria-label="Chamber">
+      <button id="tH" aria-pressed="true" data-i="tabH"></button>
+      <button id="tS" aria-pressed="false" data-i="tabS"></button>
+      <button id="tG" aria-pressed="false" data-i="tabG"></button>
       <span class="sp"></span>
-      <button class="chip" id="close" aria-pressed="false">Only 20%–80%</button>
+      <button class="chip" id="close" aria-pressed="false" data-i="only"></button>
     </div>
     <div class="legend">
       <span style="--c:var(--f-fpo)">FPO</span><span style="--c:var(--f-pm)">Polymarket</span>
-      <span style="--c:var(--f-cook)">Cook-implied</span><span style="--c:var(--f-fund)">Fundamentals</span>
-      <span>Further right = better for Democrats; midline is 50%</span>
+      <span style="--c:var(--f-cook)" data-i="lgC"></span><span style="--c:var(--f-fund)" data-i="lgF"></span>
+      <span data-i="lgR"></span>
     </div>
     <div class="tw"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+    <p class="note" style="margin-top:10px" data-i="rtNote"></p>
   </section>
 
-  <section class="panel" id="trend" style="margin-top:14px"><h2 style="margin:0 0 6px;font-size:15px">Trend across model runs</h2>
-  <div id="trendMsg" class="hint"></div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px"><div><div class="hint">House: expected Dem seats (band = 80% range, line = 218)</div><svg id="trH" viewBox="0 0 400 170" style="width:100%"></svg></div>
-  <div><div class="hint">Probability Democrats win control</div><svg id="trC" viewBox="0 0 400 170" style="width:100%"></svg></div></div></section>
-  <p class="note"><b>Method.</b> Each seat's composite is a weighted average of available signals (missing ones dropped, weights renormalized). Seat totals come from a Gaussian-copula simulation (House correlation 0.31, Senate 0.38) calibrated so FPO-only seat spread matches FPO's published range.
-  Fundamentals = 2024 presidential margin (0.5) + 2024 House result (0.3) + 2022 House result (0.2) + national shift; district SD 5.5, Senate and governor SD 6.5.
-  TX, FL, OH, NC, MO, CA, UT, LA and TN were redrawn, so both House-result terms are dropped; AL, NY and GA drop 2022 only; districts without a results table use the presidential margin only.
-  GA, NH, MN and NC are treated as Democratic holds and FL and LA as Republican holds, not modeled. The table lists the 66 closest House districts; the other 369 are treated as safe (207 Democratic). Fundamentals reflect district lean only, not candidate quality, fundraising or scandals.</p>
+  <p class="note" data-i="method"></p>
+  <p class="note"><a href="https://github.com/zhirun-blip/2026-US-Midterm-Election-Model" data-i="src"></a></p>
 </div>
 
 <script>
-const CK={T:.5,l:.7,L:.3,k:.88,K:.12}, CKN={T:"Toss Up",l:"Lean D",L:"Lean R",k:"Likely D",K:"Likely R"};
-let H=[],S=[],G=[],FIXED=207;
-// Senate: st, FPO, PM, Cook, 2024 Trump margin
-const HIDE=new Set(['GA','NH','LA','MN','NC','FL']);
-const SN={AK:"Alaska",OH:"Ohio",TX:"Texas",IA:"Iowa",KS:"Kansas",ME:"Maine",MI:"Michigan",GA:"Georgia",NC:"North Carolina",NH:"New Hampshire",MN:"Minnesota",NE:"Nebraska",SC:"South Carolina",FL:"Florida",LA:"Louisiana"};
-const SN2={...SN,NV:"Nevada",WI:"Wisconsin"};
-
+let H=[],S=[],G=[],D0={},HIST=[],lang='en';
+const CK={T:.5,l:.7,L:.3,k:.88,K:.12};
 function Phi(x){const t=1/(1+.2316419*Math.abs(x)),d=.3989423*Math.exp(-x*x/2);const p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p}
 function probit(p){p=Math.min(Math.max(p,1e-6),1-1e-6);let lo=-8,hi=8;for(let i=0;i<40;i++){const m=(lo+hi)/2;Phi(m)<p?lo=m:hi=m}return lo}
 function gauss(){let u=0;while(!u)u=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(6.283185307*Math.random())}
@@ -153,12 +163,12 @@ let calc={};
 
 function compute(){
   const N=+$("nat").value,fw=+$("fw").value/100,sh=N+1.5,k=(1-fw)/.75;
-  const d=N-7.8, adj=(p,sg)=>p==null?null:Phi(probit(p)+d/sg);
+  const d=N-D0.N0, adj=(p,sg)=>p==null?null:Phi(probit(p)+d/sg);
   H.forEach(h=>{h.fund=Phi((h.base+sh)/5.5);const c=h.ck?CK[h.ck]:(h.f>.5?.97:.03);h.cookP=adj(c,5.5);h.fA=adj(h.f,5.5);h.pA=adj(h.pm,5.5);h.comp=wavg([[h.fA,.35*k],[h.pA,.25*k],[h.cookP,.15*k],[h.fund,fw]])});
   S.forEach(s=>{s.fund=Phi((-s.tr+sh)/6.5);const c=s.ck?CK[s.ck]:(s.f>.5?.97:.03);s.cookP=adj(c,6.5);s.fA=adj(s.f,6.5);s.pA=adj(s.pm,6.5);s.comp=wavg([[s.fA,.35*k],[s.pA,.25*k],[s.cookP,.15*k],[s.fund,fw]])});
   G.forEach(g=>{g.fund=Phi((-g.tr+sh)/6.5);g.cookP=adj(CK[g.ck],6.5);g.pA=adj(g.pm,6.5);g.comp=wavg([[g.pA,.45*(1-fw)],[g.cookP,.30*(1-fw)],[g.fund,fw]])});
-  calc.h=sim(H.map(h=>h.comp),.309,FIXED,218,3000);
-  calc.s=sim(S.map(s=>s.comp),.376,47,51,5000);
+  calc.h=sim(H.map(h=>h.comp),(D0.rho_h||.5),D0.fixed_dem,218,3000);
+  calc.s=sim(S.map(s=>s.comp),.376,D0.sen_add,51,5000);
   calc.g=sim(G.map(g=>g.comp),.3,0,5,5000);
 }
 function sim(ps,rho,add,thr,n){
@@ -179,55 +189,119 @@ function histSvg(el,r,lo,hi){
   for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step)s+=`<text x="${pl+(v-lo)*bw+bw/2}" y="${Hh-6}" text-anchor="middle">${v}</text>`;
   el.innerHTML=s;
 }
+
+const TX={
+en:{title:"2026 Midterm Seat Model",
+sub:"Data as of {asof} · FPO · Polymarket · Cook · Fundamentals · Drag the sliders and seats and odds recompute instantly",
+natL:"National House vote margin (Democratic lead)",
+natH:"Default D+{N0} (average of FPO and RCP generic ballot). Moving away from it shifts the FPO, Polymarket and Cook signals by the same amount; the table shows shifted values. Fundamentals shift = this value + 1.5.",
+fwL:"Fundamentals weight",fwH:"Other signals scale proportionally: FPO 35 · Polymarket 25 · Cook 15 (governors have no FPO: PM 45 · Cook 30).",
+rst:"Reset sliders",hT:"House · 218 needed",sT:"Senate · 51 needed",gT:"Governors · 8 tracked states",
+expS:"expected Dem seats",expG:"expected Dem wins",ctl:"Control",rng:"80% range",maj:"Majority (≥5)",
+hD:"House: Democratic seat distribution",sD:"Senate: Democratic seat distribution",
+trT:"Trend across model runs",trEmpty:"The trend appears after the second model run (runs happen every Tuesday and Saturday).",
+trH:"House expected seats (band = 80% range)",trS:"Senate expected seats (band = 80% range)",trC:"Control probability (%)",hLab:"House",sLab:"Senate",
+tabH:"House",tabS:"Senate",tabG:"Governor",only:"Only 20%–80%",
+lgC:"Cook-implied",lgF:"Fundamentals",lgR:"Further right = better for Democrats; midline is 50%",
+district:"District",state:"State",fund:"Fund.",comp:"Composite",rate:"Our rating",none:"No seats match this filter",
+rtNote:"Our rating is set from the composite Democratic win probability: Solid ≥95% · Likely 80–95% · Lean 65–80% · Tilt 55–65% · Toss-up 45–55% (mirrored for Republicans). It is separate from Cook's rating.",
+"Solid D":"Solid D","Likely D":"Likely D","Lean D":"Lean D","Tilt D":"Tilt D","Toss-up":"Toss-up","Tilt R":"Tilt R","Lean R":"Lean R","Likely R":"Likely R","Solid R":"Solid R",
+ckT:"Toss Up",ckl:"Lean D",ckL:"Lean R",ckk:"Likely D",ckK:"Likely R",ckS:"Solid",
+method:"<b>Method.</b> Each seat's composite is a weighted average of available signals (missing ones dropped, weights renormalized). Seat totals come from a Gaussian-copula simulation (Senate correlation 0.38; the House is 0.31 across all 435 districts, but this page simulates only the {nl} closest districts, so it uses 0.5 to reproduce the full model's control probability) calibrated so FPO-only seat spread matches FPO's published range. Fundamentals = 2024 presidential margin (0.5) + 2024 House result (0.3) + 2022 House result (0.2) + national shift; district SD 5.5, Senate and governor SD 6.5. TX, FL, OH, NC, MO, CA, UT, LA and TN were redrawn, so both House-result terms are dropped; AL, NY and GA drop 2022 only; districts without a results table use the presidential margin only. GA, NH, MN and NC are treated as Democratic holds and FL and LA as Republican holds, not modeled. The table lists the {nl} closest House districts; the other {nr} are treated as safe ({fx} Democratic). Fundamentals reflect district lean only, not candidate quality, fundraising or scandals.",
+src:"Source code and data on GitHub",
+names:{AK:"Alaska",OH:"Ohio",TX:"Texas",IA:"Iowa",KS:"Kansas",ME:"Maine",MI:"Michigan",NE:"Nebraska",SC:"South Carolina",NV:"Nevada",WI:"Wisconsin",GA:"Georgia",FL:"Florida"}},
+zh:{title:"2026 年中期选举席位模型",
+sub:"数据截至 {asof} · FPO · Polymarket · Cook · 基本面 · 拖动滑块,席位和概率即时重算",
+natL:"全国众议院得票差(民主党领先)",
+natH:"默认 D+{N0}(FPO 与 RCP 通用选票的平均)。偏离默认值时,FPO、Polymarket 和 Cook 三个信号会同步移动,表格显示移动后的值。基本面的移动量 = 此值 + 1.5。",
+fwL:"基本面权重",fwH:"其他信号按比例缩放:FPO 35 · Polymarket 25 · Cook 15(州长没有 FPO:Polymarket 45 · Cook 30)。",
+rst:"重置滑块",hT:"众议院 · 需 218 席",sT:"参议院 · 需 51 席",gT:"州长 · 追踪 8 州",
+expS:"民主党预期席位",expG:"民主党预期获胜数",ctl:"控制概率",rng:"80% 区间",maj:"过半(≥5)",
+hD:"众议院:民主党席位分布",sD:"参议院:民主党席位分布",
+trT:"各次模型运行的走势",trEmpty:"第二次模型运行之后会显示走势(每周二、周六各运行一次)。",
+trH:"众议院预期席位(阴影 = 80% 区间)",trS:"参议院预期席位(阴影 = 80% 区间)",trC:"控制概率(%)",hLab:"众议院",sLab:"参议院",
+tabH:"众议院",tabS:"参议院",tabG:"州长",only:"仅看 20%–80%",
+lgC:"Cook 隐含",lgF:"基本面",lgR:"越靠右对民主党越有利;中线为 50%",
+district:"选区",state:"州",fund:"基本面",comp:"综合",rate:"本模型评级",none:"没有符合条件的席位",
+rtNote:"本模型评级按民主党获胜的综合概率划分:稳(Solid)≥95% · 很可能(Likely)80–95% · 倾向(Lean)65–80% · 微倾(Tilt)55–65% · 五五开(Toss-up)45–55%,共和党一侧对称。它独立于 Cook 的评级。",
+"Solid D":"稳 D","Likely D":"很可能 D","Lean D":"倾向 D","Tilt D":"微倾 D","Toss-up":"五五开","Tilt R":"微倾 R","Lean R":"倾向 R","Likely R":"很可能 R","Solid R":"稳 R",
+ckT:"五五开",ckl:"倾向 D",ckL:"倾向 R",ckk:"很可能 D",ckK:"很可能 R",ckS:"稳",
+method:"<b>方法。</b>每个席位的综合概率是各可用信号的加权平均(缺失的信号去掉,权重重新归一)。席位总数来自高斯 copula 模拟(参议院相关系数 0.38;众议院在全部 435 个选区上是 0.31,但本页只模拟最接近的 {nl} 个选区,所以取 0.5,使控制概率与完整模型一致),校准到与 FPO 公布的席位波动范围一致。基本面 = 2024 年总统选举差(0.5)+ 2024 年众议院结果(0.3)+ 2022 年众议院结果(0.2)+ 全国环境移动量;选区标准差 5.5,参议院和州长 6.5。TX、FL、OH、NC、MO、CA、UT、LA、TN 重划了选区,所以两项众议院结果都不用;AL、NY、GA 只不用 2022 年;没有结果表的选区只用总统选举差。GA、NH、MN、NC 按民主党守住、FL、LA 按共和党守住处理,不建模。表格列出最接近的 {nl} 个众议院选区;其余 {nr} 个按稳固席位处理(其中 {fx} 个为民主党)。基本面只反映选区倾向,不含候选人质量、筹款或丑闻。",
+src:"源代码和数据(GitHub)",
+names:{AK:"阿拉斯加",OH:"俄亥俄",TX:"德克萨斯",IA:"艾奥瓦",KS:"堪萨斯",ME:"缅因",MI:"密歇根",NE:"内布拉斯加",SC:"南卡罗来纳",NV:"内华达",WI:"威斯康星",GA:"佐治亚",FL:"佛罗里达"}}
+};
+const t=k=>TX[lang][k]??k;
+const fill=s=>s.replace(/\{asof\}/g,D0.asof).replace(/\{N0\}/g,D0.N0).replace(/\{nl\}/g,D0.n_listed).replace(/\{nr\}/g,435-D0.n_listed).replace(/\{fx\}/g,D0.fixed_dem);
+function applyLang(){
+  document.documentElement.lang=lang==='zh'?'zh-CN':'en';document.title=t('title');
+  document.querySelectorAll('[data-i]').forEach(e=>{e.innerHTML=fill(t(e.dataset.i))});
+  $("lang").textContent=lang==='zh'?'EN':'中文';
+  try{localStorage.setItem('lang',lang)}catch(e){}
+  render();
+}
+const CKC={T:'T',l:'l',L:'L',k:'k',K:'K'};
+function ratingOf(p){const q=Math.max(p,1-p),s=p>=.5?'D':'R';
+  if(q>=.95)return['Solid '+s,'s '+s];if(q>=.80)return['Likely '+s,'l '+s];if(q>=.65)return['Lean '+s,'n '+s];if(q>=.55)return['Tilt '+s,'t '+s];return['Toss-up','x'];}
+function rateCell(p){const [n,c]=ratingOf(p);return `<span class="rt ${c}">${t(n)}</span>`}
+function compCell(p){return `<div class="comp"><span class="cb"><i style="width:${(p*100).toFixed(0)}%"></i></span><b style="font-family:var(--mono);min-width:3ch;text-align:right">${Math.round(p*100)}</b></div>`}
+function sname(id){return TX[lang].names[id]||id}
 function render(){
+  if(!D0.N0&&D0.N0!==0)return;
   $("natO").textContent="D+"+(+$("nat").value).toFixed(1);$("fwO").textContent=$("fw").value+"%";
   compute();
   const h=calc.h,s=calc.s,g=calc.g;
   $("hExp").textContent=Math.round(h.mean);$("hCtl").textContent=pct(h.ctl);$("hRng").textContent=h.lo+"–"+h.hi;$("hBar").style.width=Math.min(100,h.mean/435*100)+"%";
   $("sExp").textContent=s.mean.toFixed(1);$("sCtl").textContent=pct(s.ctl);$("sRng").textContent=s.lo+"–"+s.hi;$("sBar").style.width=s.mean+"%";
   $("gExp").textContent=g.mean.toFixed(1);$("gCtl").textContent=pct(g.ctl);$("gBar").style.width=g.mean/8*100+"%";
-  histSvg($("hSvg"),h,190,285);histSvg($("sSvg"),s,41,62);
-  table();
+  histSvg($("hSvg"),h,D0.fixed_dem-17,D0.fixed_dem+78);histSvg($("sSvg"),s,41,62);
+  table();trend();
 }
-function strip(vals){return `<div class="strip">`+vals.filter(v=>v[1]!=null).map(v=>`<i style="left:${(v[1]*100).toFixed(1)}%;--c:${v[0]}" title="${(v[1]*100).toFixed(0)}%"></i>`).join("")+`</div>`}
-function compCell(p){return `<div class="comp"><span class="cb"><i style="width:${(p*100).toFixed(0)}%"></i></span><b style="font-family:var(--mono);min-width:3ch;text-align:right">${Math.round(p*100)}</b></div>`}
 function table(){
-  const t=state.tab;let rows,head;
-  const cols=[["name",t==="H"?"District":"State"],["fpo","FPO"],["pm","PM"],["ck","Cook"],["fund","Fund."],["comp","Composite"]];
-  if(t==="H")rows=H.map(h=>({n:h.id,name:h.id+(h.terms<3?`<span class="tag" style="margin-left:6px" title="${h.terms===1?'presidential margin only':'2 of 3 terms'}">${h.terms}t</span>`:""),fpo:h.fA,pm:h.pA,ck:h.ck?CKN[h.ck]:"Solid",fund:h.fund,comp:h.comp,cookP:h.cookP}));
-  else if(t==="S")rows=S.filter(x=>!HIDE.has(x.id)).map(x=>({n:x.id,name:SN[x.id],fpo:x.fA,pm:x.pA,ck:x.ck?CKN[x.ck]:"Solid",fund:x.fund,comp:x.comp,cookP:x.cookP}));
-  else rows=G.map(x=>({n:x.id,name:SN2[x.id],fpo:null,pm:x.pA,ck:CKN[x.ck],fund:x.fund,comp:x.comp,cookP:x.cookP}));
+  const tb=state.tab;let rows;
+  const cols=[["name",tb==="H"?t('district'):t('state')],["fpo","FPO"],["pm","PM"],["ck","Cook"],["fund",t('fund')],["comp",t('comp')],["rate",t('rate')]];
+  const ckl=c=>c?t('ck'+c):t('ckS');
+  if(tb==="H")rows=H.map(h=>({n:h.id,name:h.id+(h.terms<3?`<span class="tag" style="margin-left:6px" title="${lang==='zh'?(h.terms===1?'仅用总统选举差':'3 项中用 2 项'):(h.terms===1?'presidential margin only':'2 of 3 terms')}">${h.terms}t</span>`:""),fpo:h.fA,pm:h.pA,ck:ckl(h.ck),fund:h.fund,comp:h.comp,cookP:h.cookP}));
+  else if(tb==="S")rows=S.map(x=>({n:x.id,name:sname(x.id),fpo:x.fA,pm:x.pA,ck:ckl(x.ck),fund:x.fund,comp:x.comp,cookP:x.cookP}));
+  else rows=G.map(x=>({n:x.id,name:sname(x.id),fpo:null,pm:x.pA,ck:ckl(x.ck),fund:x.fund,comp:x.comp,cookP:x.cookP}));
   if(state.close)rows=rows.filter(r=>r.comp>=.2&&r.comp<=.8);
-  const key=state.sort;rows.sort((a,b)=>{const va=key==="name"?a.n:key==="ck"?a.cookP:a[key],vb=key==="name"?b.n:key==="ck"?b.cookP:b[key];return ((va??-1)>(vb??-1)?1:-1)*state.dir});
-  $("thead").innerHTML="<tr>"+cols.map(c=>`<th scope="col" data-k="${c[0]}" class="${c[0]==='name'||c[0]==='ck'?'':''}">${c[1]}${state.sort===c[0]?(state.dir<0?" ↓":" ↑"):""}</th>`).join("")+"</tr>";
-  $("tbody").innerHTML=rows.map(r=>`<tr><td>${r.name}</td><td class="n">${r.fpo==null?"–":Math.round(r.fpo*100)}</td><td class="n">${r.pm==null?"–":Math.round(r.pm*100)}</td><td>${r.ck}</td><td class="n">${Math.round(r.fund*100)}</td><td>${compCell(r.comp)}</td></tr>`).join("")||"<tr><td colspan=6>No seats match this filter</td></tr>";
+  const key=state.sort==="rate"?"comp":state.sort;rows.sort((a,b)=>{const va=key==="name"?a.n:key==="ck"?a.cookP:a[key],vb=key==="name"?b.n:key==="ck"?b.cookP:b[key];return ((va??-1)>(vb??-1)?1:-1)*state.dir});
+  $("thead").innerHTML="<tr>"+cols.map(c=>`<th scope="col" data-k="${c[0]}">${c[1]}${state.sort===c[0]?(state.dir<0?" ↓":" ↑"):""}</th>`).join("")+"</tr>";
+  $("tbody").innerHTML=rows.map(r=>`<tr><td>${r.name}</td><td class="n">${r.fpo==null?"–":Math.round(r.fpo*100)}</td><td class="n">${r.pm==null?"–":Math.round(r.pm*100)}</td><td>${r.ck}</td><td class="n">${Math.round(r.fund*100)}</td><td>${compCell(r.comp)}</td><td>${rateCell(r.comp)}</td></tr>`).join("")||`<tr><td colspan=7>${t('none')}</td></tr>`;
 }
-$("nat").addEventListener("input",render);$("fw").addEventListener("input",render);$("rst").addEventListener("click",()=>{$("nat").value=7.8;$("fw").value=25;render()});
-$("thead").addEventListener("click",e=>{const k=e.target.closest("th")?.dataset.k;if(!k)return;if(state.sort===k)state.dir*=-1;else{state.sort=k;state.dir=k==="name"?1:-1}table()});
-[["tH","H"],["tS","S"],["tG","G"]].forEach(([id,t])=>$(id).addEventListener("click",()=>{state.tab=t;state.sort="comp";state.dir=-1;["tH","tS","tG"].forEach(i=>$(i).setAttribute("aria-pressed",i===id));table()}));
-$("close").addEventListener("click",()=>{state.close=!state.close;$("close").setAttribute("aria-pressed",state.close);table()});
-
-function trendDraw(hist){
-  const msg=document.getElementById("trendMsg");
-  if(!hist||hist.length<2){msg.textContent=hist&&hist.length?"Only one run recorded so far ("+hist[0].date+"). The chart appears after the second run (every Tue/Sat).":"No runs recorded yet.";return}
-  msg.textContent=hist.length+" runs, "+hist[0].date+" to "+hist[hist.length-1].date+".";
-  const W=400,Hh=170,pl=34,pr=8,pt=8,pb=22,n=hist.length,X=i=>pl+(n===1?0:i/(n-1))*(W-pl-pr);
-  function chart(el,series,lo,hi,fmt,extra){
-    const Y=v=>pt+(1-(v-lo)/(hi-lo))*(Hh-pt-pb);let s="";
-    for(let k=0;k<=4;k++){const v=lo+(hi-lo)*k/4;s+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width=".6"></line><text x="${pl-4}" y="${Y(v)+3}" text-anchor="end" font-size="9" fill="var(--mute)">${fmt(v)}</text>`}
-    if(extra)s+=extra(Y);
-    series.forEach(se=>{s+=`<polyline fill="none" stroke="${se.c}" stroke-width="2" points="${hist.map((r,i)=>X(i).toFixed(1)+","+Y(se.f(r)).toFixed(1)).join(" ")}"></polyline>`+hist.map((r,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(se.f(r)).toFixed(1)}" r="2.5" fill="${se.c}"><title>${r.date}: ${fmt(se.f(r))}</title></circle>`).join("")});
-    [0,n-1].forEach(i=>s+=`<text x="${X(i)}" y="${Hh-6}" text-anchor="${i?'end':'start'}" font-size="9" fill="var(--mute)">${hist[i].date.slice(5)}</text>`);
-    el.innerHTML=s}
-  const hmin=Math.min(...hist.map(r=>r.house_lo),218)-5,hmax=Math.max(...hist.map(r=>r.house_hi),218)+5;
-  chart(document.getElementById("trH"),[{c:"var(--dem)",f:r=>r.house_mean}],hmin,hmax,v=>Math.round(v),Y=>`<polygon fill="var(--dem-soft)" opacity=".7" points="${hist.map((r,i)=>X(i).toFixed(1)+","+Y(r.house_hi).toFixed(1)).join(" ")} ${hist.slice().reverse().map((r,i)=>X(n-1-i).toFixed(1)+","+Y(r.house_lo).toFixed(1)).join(" ")}"></polygon><line x1="${pl}" x2="${W-pr}" y1="${Y(218)}" y2="${Y(218)}" stroke="var(--tick)" stroke-dasharray="4 3" stroke-width=".8"></line>`);
-  chart(document.getElementById("trC"),[{c:"var(--dem)",f:r=>r.house_ctl},{c:"var(--gold)",f:r=>r.senate_ctl}],0,1,v=>Math.round(v*100)+"%",Y=>`<text x="${W-pr}" y="${Y(.1)}" text-anchor="end" font-size="9" fill="var(--dem)">House</text><text x="${W-pr}" y="${Y(.03)}" text-anchor="end" font-size="9" fill="var(--gold)">Senate</text>`);
+function lines(rows,series,lo,hi,band){
+  const W=400,Hh=150,pl=30,pr=8,pt=8,pb=22,n=rows.length,X=i=>pl+(n===1?0:i*(W-pl-pr)/(n-1)),Y=v=>pt+(hi-v)/(hi-lo)*(Hh-pt-pb);let s="";
+  const st=(hi-lo)>60?20:(hi-lo)>15?5:2;
+  for(let v=Math.ceil(lo/st)*st;v<=hi;v+=st)s+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width=".6"/><text x="${pl-4}" y="${Y(v)+3}" text-anchor="end">${v}</text>`;
+  if(band){const [a,b]=band;s+=`<path class="bd" fill="${series[0].c}" d="M${rows.map((r,i)=>X(i)+","+Y(r[b])).join("L")}L${rows.map((r,i)=>X(rows.length-1-i)+","+Y(rows[rows.length-1-i][a])).join("L")}Z"/>`}
+  series.forEach(se=>{s+=`<path class="ln" stroke="${se.c}" d="M${rows.map((r,i)=>X(i)+","+Y(r[se.k])).join("L")}"/>`;rows.forEach((r,i)=>{s+=`<circle cx="${X(i)}" cy="${Y(r[se.k])}" r="2.4" fill="${se.c}"/>`})});
+  s+=`<text x="${X(0)}" y="${Hh-6}">${rows[0].date.slice(5)}</text><text x="${X(n-1)}" y="${Hh-6}" text-anchor="end">${rows[n-1].date.slice(5)}</text>`;
+  return `<svg viewBox="0 0 ${W} ${Hh}">${s}</svg>`;
 }
-fetch("data.json?v="+Date.now()).then(r=>r.json()).then(d=>{
-  H=d.house.map(h=>({id:h.id,f:h.f,pm:h.pm,ck:h.ck||"",base:Math.max(-30,Math.min(30,h.base)),terms:h.terms}));
-  S=d.senate.map(x=>({id:x.id,f:x.f,pm:x.pm,ck:x.ck||"",tr:x.tr}));
-  G=d.gov.map(x=>({id:x.id,pm:x.pm,ck:x.ck,tr:x.tr}));
-  FIXED=d.fixedD;document.getElementById("asof").textContent=d.asof;
-  render();trendDraw(d.history);
-}).catch(e=>{document.getElementById("asof").textContent="data unavailable"});
-</script>
+function trend(){
+  const el=$("trBody");
+  if(HIST.length<2){el.innerHTML=`<div class="empty">${t('trEmpty')}</div>`;return}
+  const R=HIST.map(r=>({...r,hc:r.house_ctl*100,sc:r.senate_ctl*100}));
+  const pr=(a,k)=>{const v=R.flatMap(r=>k.map(x=>r[x]));return[Math.floor(Math.min(...v)-3),Math.ceil(Math.max(...v)+3)]};
+  const [hl,hh]=pr(R,['house_lo','house_hi']),[sl,sh]=pr(R,['senate_lo','senate_hi']);
+  el.innerHTML=`<div class="chartwrap"><div class="card"><h2>${t('trH')}</h2>${lines(R,[{k:'house_mean',c:'var(--dem)'}],hl,hh,['house_lo','house_hi'])}</div>
+  <div class="card"><h2>${t('trS')}</h2>${lines(R,[{k:'senate_mean',c:'var(--dem)'}],sl,sh,['senate_lo','senate_hi'])}</div>
+  <div class="card"><h2>${t('trC')}</h2>${lines(R,[{k:'hc',c:'var(--dem)'},{k:'sc',c:'var(--gold)'}],0,100)}<div class="lg"><span style="--c:var(--dem)">${t('hLab')}</span><span style="--c:var(--gold)">${t('sLab')}</span></div></div></div>`;
+}
+async function init(){
+  try{lang=localStorage.getItem('lang')||((navigator.language||'').toLowerCase().startsWith('zh')?'zh':'en')}catch(e){lang=(navigator.language||'').toLowerCase().startsWith('zh')?'zh':'en'}
+  try{D0=await (await fetch('data.json',{cache:'no-store'})).json()}catch(e){document.body.insertAdjacentHTML('afterbegin','<p style="padding:20px">data.json could not be loaded. Open this page through a web server.</p>');return}
+  try{HIST=await (await fetch('history.json',{cache:'no-store'})).json()}catch(e){HIST=[]}
+  H=D0.H.split(";").map(r=>{const a=r.split(",");return{id:a[0],f:+a[1],pm:+a[2]<0?null:+a[2],ck:a[3],base:Math.max(-30,Math.min(30,+a[4])),terms:+a[5]}});
+  S=D0.S.map(a=>({id:a[0],f:a[1],pm:a[2],ck:a[3],tr:a[4]}));
+  G=D0.G.map(a=>({id:a[0],pm:a[1],ck:a[2],tr:a[3]}));
+  $("nat").value=D0.N0;
+  $("nat").addEventListener("input",render);$("fw").addEventListener("input",render);
+  $("rst").addEventListener("click",()=>{$("nat").value=D0.N0;$("fw").value=25;render()});
+  $("lang").addEventListener("click",()=>{lang=lang==='zh'?'en':'zh';applyLang()});
+  $("thead").addEventListener("click",e=>{const k=e.target.closest("th")?.dataset.k;if(!k)return;if(state.sort===k)state.dir*=-1;else{state.sort=k;state.dir=k==="name"?1:-1}table()});
+  [["tH","H"],["tS","S"],["tG","G"]].forEach(([id,tb])=>$(id).addEventListener("click",()=>{state.tab=tb;state.sort="comp";state.dir=-1;["tH","tS","tG"].forEach(i=>$(i).setAttribute("aria-pressed",i===id));table()}));
+  $("close").addEventListener("click",()=>{state.close=!state.close;$("close").setAttribute("aria-pressed",state.close);table()});
+  applyLang();
+}
+init();
+</script></body></html>
