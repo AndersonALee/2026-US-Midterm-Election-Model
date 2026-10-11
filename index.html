@@ -234,7 +234,7 @@ function histSvg(el,r,lo,hi){
 const TX={
 en:{title:"2026 Midterm Seat Model",
 about:"This model estimates the chances of each party winning the 2026 House, Senate and governorships. For every race it averages several signals: the FiftyPlusOne forecast, Polymarket prices, Cook ratings, RealClearPolling averages and district fundamentals. It then simulates 20,000 elections to get control odds and expected seats. It updates twice a day. It is a transparent way to compare signals, not an official forecast.",
-sub:"Data as of {asof} · FPO · Polymarket · Cook · RCP polls · Fundamentals · Drag the sliders and seats and odds recompute instantly",
+sub:"Last updated {upd} · FPO · Polymarket · Cook · RCP polls · Fundamentals · Drag the sliders and seats and odds recompute instantly",
 natL:"National House vote margin (Democratic lead)",
 natH:"Default D+{N0} (average of FPO and RCP generic ballot). Moving away from it shifts the FPO, Polymarket, Cook and poll signals by the same amount; the table shows shifted values. Fundamentals shift = this value + 1.5.",
 fwL:"Fundamentals weight",fwH:"Other signals scale proportionally: at the default 15%: Senate polls 30 · FPO 25 · Polymarket 20 · Cook 10; Governors polls 43 · Polymarket 28 · Cook 14 (no FPO); House FPO 40 · Polymarket 28 · Cook 17 (no polls). Polls with a stale or thin average count less; races without polls fall back to the other signals.",
@@ -257,7 +257,7 @@ src:"Source code and data on GitHub",
 names:{AK:"Alaska",OH:"Ohio",TX:"Texas",IA:"Iowa",KS:"Kansas",ME:"Maine",MI:"Michigan",NE:"Nebraska",SC:"South Carolina",NV:"Nevada",WI:"Wisconsin",GA:"Georgia",FL:"Florida"}},
 zh:{title:"2026 年中期选举席位模型",
 about:"本模型估计 2026 年美国众议院、参议院和州长选举中各党的获胜概率。对每场选举,它综合 FiftyPlusOne 预测、Polymarket 价格、Cook 评级、RealClearPolling 民调平均和选区基本面,再模拟 20,000 次选举,得出控制权概率和预期席位。每天更新两次。这是比较各类信号的透明工具,不是官方预测。",
-sub:"数据截至 {asof} · FPO · Polymarket · Cook · RCP 民调 · 基本面 · 拖动滑块,席位和概率即时重算",
+sub:"最近更新 {upd} · FPO · Polymarket · Cook · RCP 民调 · 基本面 · 拖动滑块,席位和概率即时重算",
 natL:"全国众议院得票差(民主党领先)",
 natH:"默认 D+{N0}(FPO 与 RCP 通用选票的平均)。偏离默认值时,FPO、Polymarket、Cook 和民调信号会同步移动,表格显示移动后的值。基本面的移动量 = 此值 + 1.5。",
 fwL:"基本面权重",fwH:"其他信号按比例缩放:默认 15% 时:参议院 民调 30 · FPO 25 · Polymarket 20 · Cook 10;州长 民调 43 · Polymarket 28 · Cook 14(没有 FPO);众议院 FPO 40 · Polymarket 28 · Cook 17(没有民调)。民调过旧或数量少时权重降低;没有民调的选举回退到其他信号。",
@@ -280,7 +280,8 @@ src:"源代码和数据(GitHub)",
 names:{AK:"阿拉斯加",OH:"俄亥俄",TX:"德克萨斯",IA:"艾奥瓦",KS:"堪萨斯",ME:"缅因",MI:"密歇根",NE:"内布拉斯加",SC:"南卡罗来纳",NV:"内华达",WI:"威斯康星",GA:"佐治亚",FL:"佛罗里达"}}
 };
 const t=k=>TX[lang][k]??k;
-const fill=s=>s.replace(/\{asof\}/g,D0.asof).replace(/\{N0\}/g,D0.N0).replace(/\{nl\}/g,D0.n_listed).replace(/\{nr\}/g,435-D0.n_listed).replace(/\{fx\}/g,D0.fixed_dem);
+const UPDf=()=>{try{if(!D0.ts)return D0.asof;const d=new Date(D0.ts);return d.toLocaleString(lang==='zh'?'zh-CN':'en-US',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'})}catch(e){return D0.asof}};
+const fill=s=>s.replace(/\{upd\}/g,UPDf()).replace(/\{asof\}/g,D0.asof).replace(/\{N0\}/g,D0.N0).replace(/\{nl\}/g,D0.n_listed).replace(/\{nr\}/g,435-D0.n_listed).replace(/\{fx\}/g,D0.fixed_dem);
 function applyLang(){
   document.documentElement.lang=lang==='zh'?'zh-CN':'en';document.title=t('title');
   document.querySelectorAll('[data-i]').forEach(e=>{e.innerHTML=fill(t(e.dataset.i))});
