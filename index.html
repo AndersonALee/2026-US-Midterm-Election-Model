@@ -233,8 +233,8 @@ trEmpty:"The trend appears after the second model run (runs happen every Tuesday
 trH:"House expected seats (band = 80% range)",trS:"Senate expected seats (band = 80% range)",trC:"Control probability (%)",trG:"Governors: expected Dem governors (of 50)",hLab:"House",sLab:"Senate",
 fAll:"All",fComp:"Competitive (20–80%)",tabH:"House",tabS:"Senate",tabG:"Governor",only:"Only 20%–80%",
 lgC:"Cook-implied",lgF:"Fundamentals",lgR:"Further right = better for Democrats; midline is 50%",
-district:"District",state:"State",fund:"Fund.",comp:"Composite",rate:"Our rating",none:"No seats match this filter",
-rtNote:"Our rating is set from the composite Democratic win probability: Solid ≥95% · Likely 80–95% · Lean 65–80% · Tilt 55–65% · Toss-up 45–55% (mirrored for Republicans). It is separate from Cook's rating.",
+district:"District",state:"State",fund:"Fund.",comp:"Composite",close:"Closeness",rate:"Our rating",none:"No seats match this filter",
+rtNote:"Closeness = 100 means a dead-even race (50% win chance) and 0 means a certain result; the table is sorted by it by default. Our rating is set from the composite Democratic win probability: Solid ≥95% · Likely 80–95% · Lean 65–80% · Tilt 55–65% · Toss-up 45–55% (mirrored for Republicans). It is separate from Cook's rating.",
 "Solid D":"Solid D","Likely D":"Likely D","Lean D":"Lean D","Tilt D":"Tilt D","Toss-up":"Toss-up","Tilt R":"Tilt R","Lean R":"Lean R","Likely R":"Likely R","Solid R":"Solid R",
 ckT:"Toss Up",ckl:"Lean D",ckL:"Lean R",ckk:"Likely D",ckK:"Likely R",ckS:"Solid",
 method:"Each seat's composite is a weighted average of available signals (missing ones dropped, weights renormalized). Seat totals come from a Gaussian-copula simulation (Senate correlation 0.38; the House is 0.31 across all 435 districts, but this page simulates only the {nl} closest districts, so it uses 0.5 to reproduce the full model's control probability) calibrated so FPO-only seat spread matches FPO's published range. Fundamentals = 2024 presidential margin (0.5) + 2024 House result (0.3) + 2022 House result (0.2) + national shift; district SD 5.5, Senate and governor SD 6.5. TX, FL, OH, NC, MO, CA, UT, LA and TN were redrawn, so both House-result terms are dropped; AL, NY and GA drop 2022 only; districts without a results table use the presidential margin only. All 35 Senate races and all 36 governor races are modeled (Democrats hold 34 Senate seats and 6 governorships that are not up; Senate majority = 51, governors = 26 of 50). States with a Cook Solid rating get a 97/3 signal. Vermont and New Hampshire governor fundamentals blend the presidential margin (20%) with the 2024 gubernatorial margin (80%) (Yankee-Republican incumbents Scott and Ayotte). The table lists the {nl} closest House districts; the other {nr} are treated as safe ({fx} Democratic). Fundamentals reflect district lean only, not candidate quality, fundraising or scandals.",
@@ -255,7 +255,7 @@ trEmpty:"第二次模型运行之后会显示走势(每周二、周六各运行�
 trH:"众议院预期席位(阴影 = 80% 区间)",trS:"参议院预期席位(阴影 = 80% 区间)",trC:"控制概率(%)",trG:"州长:民主党州长预期数(共 50)",hLab:"众议院",sLab:"参议院",
 fAll:"全部",fComp:"竞争性(20–80%)",tabH:"众议院",tabS:"参议院",tabG:"州长",only:"仅看 20%–80%",
 lgC:"Cook 隐含",lgF:"基本面",lgR:"越靠右对民主党越有利;中线为 50%",
-district:"选区",state:"州",fund:"基本面",comp:"综合",rate:"本模型评级",none:"没有符合条件的席位",
+district:"选区",state:"州",fund:"基本面",comp:"综合",close:"接近度",rate:"本模型评级",none:"没有符合条件的席位",
 rtNote:"本模型评级按民主党获胜的综合概率划分:稳(Solid)≥95% · 很可能(Likely)80–95% · 倾向(Lean)65–80% · 微倾(Tilt)55–65% · 五五开(Toss-up)45–55%,共和党一侧对称。它独立于 Cook 的评级。",
 "Solid D":"稳 D","Likely D":"很可能 D","Lean D":"倾向 D","Tilt D":"微倾 D","Toss-up":"五五开","Tilt R":"微倾 R","Lean R":"倾向 R","Likely R":"很可能 R","Solid R":"稳 R",
 ckT:"五五开",ckl:"倾向 D",ckL:"倾向 R",ckk:"很可能 D",ckK:"很可能 R",ckS:"稳",
@@ -344,16 +344,17 @@ function render(){
 }
 function table(){
   const tb=state.tab;let rows;
-  const cols=[["name",tb==="H"?t('district'):t('state')],["fpo","FPO"],["pm","PM"],["ck","Cook"],["fund",t('fund')],["comp",t('comp')],["rate",t('rate')]];
+  const cols=[["name",tb==="H"?t('district'):t('state')],["fpo","FPO"],["pm","PM"],["ck","Cook"],["fund",t('fund')],["comp",t('comp')],["close",t('close')],["rate",t('rate')]];
   const ckl=ckl2;
   if(tb==="H")rows=H.map(h=>({n:h.id,name:h.id+(h.terms<3?`<span class="tag" style="margin-left:6px" title="${lang==='zh'?(h.terms===1?'仅用总统选举差':'3 项中用 2 项'):(h.terms===1?'presidential margin only':'2 of 3 terms')}">${h.terms}t</span>`:""),fpo:h.fA,pm:h.pA,ck:ckl(h.ck),fund:h.fund,comp:h.comp,cookP:h.cookP}));
   if(tb==="H"){if(!state.close)rows=rows.concat(AL.filter(d=>!d.h).map(d=>({n:d.id,name:d.id,fpo:null,pm:null,ck:'–',fund:null,comp:d.c,cookP:null})))}
   else if(tb==="S")rows=S.map(x=>({n:x.id,name:sname(x.id),fpo:x.fA,pm:x.pA,ck:ckl(x.ck),fund:x.fund,comp:x.comp,cookP:x.cookP}));
   else rows=G.map(x=>({n:x.id,name:sname(x.id),fpo:null,pm:x.pA,ck:ckl(x.ck),fund:x.fund,comp:x.comp,cookP:x.cookP}));
+  rows.forEach(r=>r.close=1-2*Math.abs(r.comp-.5));
   if(state.close)rows=rows.filter(r=>r.comp>=.2&&r.comp<=.8);
   const key=state.sort==="rate"?"comp":state.sort;rows.sort((a,b)=>{const va=key==="name"?a.n:key==="ck"?a.cookP:a[key],vb=key==="name"?b.n:key==="ck"?b.cookP:b[key];return ((va??-1)>(vb??-1)?1:-1)*state.dir});
   $("thead").innerHTML="<tr>"+cols.map(c=>`<th scope="col" data-k="${c[0]}">${c[1]}${state.sort===c[0]?(state.dir<0?" ↓":" ↑"):""}</th>`).join("")+"</tr>";
-  $("tbody").innerHTML=rows.map(r=>`<tr><td>${r.name}</td><td class="n">${r.fpo==null?"–":Math.round(r.fpo*100)}</td><td class="n">${r.pm==null?"–":Math.round(r.pm*100)}</td><td>${r.ck}</td><td class="n">${r.fund==null?"–":Math.round(r.fund*100)}</td><td>${compCell(r.comp)}</td><td>${rateCell(r.comp)}</td></tr>`).join("")||`<tr><td colspan=7>${t('none')}</td></tr>`;
+  $("tbody").innerHTML=rows.map(r=>`<tr><td>${r.name}</td><td class="n">${r.fpo==null?"–":Math.round(r.fpo*100)}</td><td class="n">${r.pm==null?"–":Math.round(r.pm*100)}</td><td>${r.ck}</td><td class="n">${r.fund==null?"–":Math.round(r.fund*100)}</td><td>${compCell(r.comp)}</td><td class="n">${Math.round(r.close*100)}</td><td>${rateCell(r.comp)}</td></tr>`).join("")||`<tr><td colspan=8>${t('none')}</td></tr>`;
 }
 function lines(rows,series,lo,hi,band){
   const W=400,Hh=150,pl=30,pr=8,pt=8,pb=22,n=rows.length,X=i=>pl+(n===1?0:i*(W-pl-pr)/(n-1)),Y=v=>pt+(hi-v)/(hi-lo)*(Hh-pt-pb);let s="";
@@ -393,9 +394,9 @@ async function init(){
   $("lang").addEventListener("click",()=>{lang=lang==='zh'?'en':'zh';applyLang()});
   $("thead").addEventListener("click",e=>{const k=e.target.closest("th")?.dataset.k;if(!k)return;if(state.sort===k)state.dir*=-1;else{state.sort=k;state.dir=k==="name"?1:-1}table()});
   const HM={house:"H",senate:"S",governors:"G"},HR={H:"house",S:"senate",G:"governors"};
-  const setTab=tb=>{state.tab=tb;state.sort="comp";state.dir=-1;try{history.replaceState(null,"","#"+HR[tb])}catch(e){}render()};
+  const setTab=tb=>{state.tab=tb;state.sort="close";state.dir=-1;try{history.replaceState(null,"","#"+HR[tb])}catch(e){}render()};
   [["tH","H"],["tS","S"],["tG","G"]].forEach(([id,tb])=>$(id).addEventListener("click",()=>setTab(tb)));
-  if(HM[location.hash.slice(1)])state.tab=HM[location.hash.slice(1)];
+  if(HM[location.hash.slice(1)])state.tab=HM[location.hash.slice(1)];state.sort="close";state.dir=-1;
   const setF=v=>{state.close=v;$("fC").setAttribute("aria-pressed",v);$("fA").setAttribute("aria-pressed",!v);table()};
   $("fC").addEventListener("click",()=>setF(true));$("fA").addEventListener("click",()=>setF(false));
   const sq=$("sq"),sr=$("sr"),norm=x=>x.toLowerCase().replace(/[\s\-\.]/g,"");
