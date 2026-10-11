@@ -101,6 +101,18 @@ for cat,keys in inp['cookh'].items():
         if x: diffs.append((abs(rating(x['comp'])[1]-CKO[cat]),key,cat,rating(x['comp'])[0]))
 diffs.sort(reverse=True)
 res_extra['vs_cook']=[(k,c,r) for d,k,c,r in diffs if d>=2][:5]
+# consistency check: seats where independent sources (FPO, Polymarket, RCP polls) disagree by 30+ points; top 8 by spread
+fl=[]
+def _chk(name,src,comp):
+    v=[(k,x) for k,x in src if x is not None]
+    if len(v)>=2:
+        sp=max(x for k,x in v)-min(x for k,x in v)
+        if sp>=.30: fl.append((sp,name+' '+' / '.join('%s %d'%(k,round(x*100)) for k,x in v)+' / model %d'%round(comp*100)))
+for x in H: _chk(x['id'],[('FPO',inp['fpo'].get(x['id'])),('PM',x['pm'])],x['comp'])
+for x in S: _chk('Senate '+x['id'],[('FPO',inp['sen'].get(x['id'])),('PM',x['pm']),('Polls',x['pp'])],x['comp'])
+for x in G: _chk('Gov '+x['id'],[('PM',x['pm']),('Polls',x['pp'])],x['comp'])
+res_extra['flags']=[t for sp,t in sorted(fl,reverse=True)[:8]]
+res_extra['n_flags']=len(fl)
 res.update(res_extra)
 json.dump(res,open('result.json','w'));print(json.dumps(res))
 # site data + history, written into the repo checkout given as argv[2] (default ./site); history.json is the persistent store
