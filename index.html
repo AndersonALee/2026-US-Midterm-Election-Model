@@ -341,7 +341,7 @@ function mapRender(){
   rt.forEach((n,i)=>lg.push(sw(rcl[i],t(n))));
   $("vw").hidden=T!=="H"||!CD;$("zm").hidden=T!=="H"||view!=="geo"||!CD||zoomK==="us";$("sw").hidden=T!=="H"||!CN;$("sq").placeholder=t('sPh');$("zh").hidden=!(T==="H"&&view==='geo'&&CD);$("zh").textContent=t('zHint');$("zm").textContent=t(zoomD?'zBackS':'zBack')+(zoomK!=="us"?" · "+sname(zoomK):"");$("vw").textContent=t(view==='geo'?'vwT':'vwG');
   if(T==="H"&&view==='geo'&&CD){
-    let vb="0 0 975 610";if(zoomK!=="us"&&MP.p[zoomK]){const tp=document.createElementNS("http://www.w3.org/2000/svg","path");tp.setAttribute("d",MP.p[zoomK]);svg.appendChild(tp);const b=tp.getBBox();svg.removeChild(tp);let w=b.width*1.1+10,hh=b.height*1.1+10;const r=975/610;if(w/hh<r)w=hh*r;else hh=w/r;vb=`${b.x+b.width/2-w/2} ${b.y+b.height/2-hh/2} ${w} ${hh}`}if(zoomD&&zoomK!=="us"){const k=CD[zoomD]||CD[zoomD.replace('-01','-00')];if(k){const tp=document.createElementNS("http://www.w3.org/2000/svg","path");tp.setAttribute("d",k);svg.appendChild(tp);const b=tp.getBBox();svg.removeChild(tp);let w=Math.max(b.width*3.2,36),hh=Math.max(b.height*3.2,36);const r=975/610;if(w/hh<r)w=hh*r;else hh=w/r;vb=`${b.x+b.width/2-w/2} ${b.y+b.height/2-hh/2} ${w} ${hh}`}}svg.setAttribute("viewBox",vb);const hm={};H.forEach(x=>hm[x.id]=x);
+    let vb="0 0 975 610";if(zoomK!=="us"&&MP.p[zoomK]){const tp=document.createElementNS("http://www.w3.org/2000/svg","path");tp.setAttribute("d",MP.p[zoomK]);svg.appendChild(tp);const b=tp.getBBox();svg.removeChild(tp);let w=b.width*1.1+10,hh=b.height*1.1+10;const r=975/610;if(w/hh<r)w=hh*r;else hh=w/r;vb=`${b.x+b.width/2-w/2} ${b.y+b.height/2-hh/2} ${w} ${hh}`}if(zoomD&&zoomK!=="us"){const k=CD[zoomD]||CD[zoomD.replace('-01','-00')];if(k){const tp=document.createElementNS("http://www.w3.org/2000/svg","path");tp.setAttribute("d",k);svg.appendChild(tp);const b=tp.getBBox();svg.removeChild(tp);let w=Math.max(b.width*3.2,36),hh=Math.max(b.height*3.2,36);const r=975/610;if(w/hh<r)w=hh*r;else hh=w/r;vb=`${b.x+b.width/2-w/2} ${b.y+b.height/2-hh/2} ${w} ${hh}`}}{const pk=zoomK+"|"+zoomD;if(pk!==PANK){PAN={x:0,y:0};PANK=pk}const q=vb.split(" ").map(Number);q[0]-=PAN.x;q[1]-=PAN.y;vb=q.join(" ")}svg.setAttribute("viewBox",vb);const hm={};H.forEach(x=>hm[x.id]=x);
     AL.forEach(d=>{const p=d.h?d.h.comp:d.c,id=d.id,k=CD[id]||CD[id.replace('-01','-00')];if(k)h+=`<path class="m ${rc(p)}" d="${k}" data-k="H:${id}" style="stroke-width:.6;vector-effect:non-scaling-stroke"/>`});
     Object.keys(MP.p).forEach(st=>{h+=`<path d="${MP.p[st]}" fill="none" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.2" vector-effect="non-scaling-stroke" pointer-events="none"/>`});
   }else if(T==="H"){
@@ -431,7 +431,7 @@ function trend(){
   else{const [l,h]=rg(['gov_mean']);c1=`<div class="card"><h2>${t('trG')}</h2>${lines(R,[{k:'gov_mean',c:'var(--dem)'}],Math.max(0,l),Math.min(50,h))}</div>`;c2=`<div class="card"><h2>${t('trC')}</h2>${lines(R,[{k:'gc',c:'var(--dem)'}],0,100)}</div>`}
   el.innerHTML=`<div class="chartwrap">${c1}${c2}</div>`;
 }
-let RG={};
+let RG={},PAN={x:0,y:0},PANK='',DRAG=null,DRAGGED=false;
 async function init(){
   try{lang=localStorage.getItem('lang')||'en'}catch(e){lang='en'}
   try{D0=await (await fetch('data.json',{cache:'no-store'})).json()}catch(e){document.body.insertAdjacentHTML('afterbegin','<p style="padding:20px">data.json could not be loaded. Open this page through a web server.</p>');return}
@@ -477,6 +477,12 @@ async function init(){
   $("mapSvg").addEventListener("click",e=>{if(state.tab!=="H"||view!=="geo")return;const el=e.target.closest("[data-k]");if(!el)return;const id=el.dataset.k.split(":")[1],st=id.slice(0,2);if(!MP.p[st])return;if(st!==zoomK){zoomK=st;zoomD=null;mapRender()}else if(zoomD!==id){zoomD=id;mapRender()}});
   $("vw").addEventListener("click",()=>{view=view==='geo'?'tile':'geo';render()});
   const tip=$("tip"),svgm=$("mapSvg");
+  svgm.style.touchAction='none';
+  svgm.addEventListener('pointerdown',e=>{if(state.tab!=='H'||view!=='geo'||e.button>0)return;const q=svgm.getAttribute('viewBox').split(' ').map(Number);DRAG={x:e.clientX,y:e.clientY,px:PAN.x,py:PAN.y,k:q[2]/svgm.clientWidth,moved:false}});
+  window.addEventListener('pointermove',e=>{if(!DRAG)return;const dx=e.clientX-DRAG.x,dy=e.clientY-DRAG.y;if(!DRAG.moved&&Math.hypot(dx,dy)<5)return;if(!DRAG.moved){DRAG.moved=true;svgm.style.cursor='grabbing';tip.hidden=true}const q=svgm.getAttribute('viewBox').split(' ').map(Number),b0=q[0]+PAN.x,b1=q[1]+PAN.y;PAN={x:DRAG.px+dx*DRAG.k,y:DRAG.py+dy*DRAG.k};q[0]=b0-PAN.x;q[1]=b1-PAN.y;svgm.setAttribute('viewBox',q.join(' '))});
+  window.addEventListener('pointerup',()=>{if(!DRAG)return;DRAGGED=DRAG.moved;DRAG=null;svgm.style.cursor='';if(DRAGGED)setTimeout(()=>DRAGGED=false,0)});
+  svgm.addEventListener('click',e=>{if(DRAGGED){e.stopImmediatePropagation();e.preventDefault()}},true);
+  svgm.addEventListener('mousemove',e=>{if(DRAG&&DRAG.moved)e.stopImmediatePropagation()},true);
   const show=e=>{if(pin){if(Math.hypot(e.clientX-pin.x,e.clientY-pin.y)<10)return;pin=null}const el=e.target.closest("[data-k]");if(!el){tip.hidden=true;return}tip.innerHTML=tipFor(el.dataset.k);tip.hidden=false;const w=tip.offsetWidth,hh=tip.offsetHeight;let x=e.clientX+14,y=e.clientY+14;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+hh>innerHeight-8)y=e.clientY-hh-14;tip.style.left=Math.max(4,x)+"px";tip.style.top=Math.max(4,y)+"px"};
   svgm.addEventListener("mousemove",show);svgm.addEventListener("click",show);svgm.addEventListener("mouseleave",()=>{if(!pin)tip.hidden=true});
   document.addEventListener("click",e=>{if(!e.target.closest("#mapSvg"))tip.hidden=true});
