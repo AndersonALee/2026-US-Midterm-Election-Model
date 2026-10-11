@@ -53,10 +53,13 @@ fpo=inp['fpo'];pmh=inp['pmh']
 for key,b in BASE.items():
     f=fpo.get(key)
     pm=pmh.get(key)
-    fmiss=f is None
-    if fmiss: f=.999 if b>0 else .001
-    if fmiss and (pm is not None or key in cookh): fnone=True
-    else: fnone=False
+    if f is None:
+        # FPO lists only races between 0.5% and 99.5%; a missing race is a near-certain one. Direction: Polymarket, else Cook, else district lean
+        if pm is not None: d_=pm>.5
+        elif key in cookh: d_=cookh[key]>.5
+        else: d_=b>0
+        f=.999 if d_ else .001
+    fnone=False
     c=cookh.get(key,.97 if f>.5 else .03)
     fu=float(norm.cdf((b+SH)/5.5))
     comp=wavg([(None if fnone else f,.35*kh),(pm,.25*kh),(c,.15*kh),(fu,fund_w)])
