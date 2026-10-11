@@ -5,9 +5,14 @@ import matplotlib;matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 BASE=dict((a.split(':')[0],float(a.split(':')[1])) for a in open('base.txt').read().strip().split(','))
 inp=json.load(open(sys.argv[1]));N=inp.get('N',7.8);SH=N+1.5
-CK={'Toss Up':.5,'Lean D':.7,'Lean R':.3,'Likely D':.88,'Likely R':.12}
-SEN_TR={'TX':13.6,'AK':13.1,'OH':11.2,'ME':-6.5,'KS':15.9,'IA':13.2,'MI':1.4,'NE':20.5,'SC':17.8}
-GOV_TR={'OH':11.2,'IA':13.2,'TX':13.6,'NV':3.1,'GA':2.2,'FL':13.1,'AK':13.1,'WI':.9}
+CK={'Toss Up':.5,'Lean D':.7,'Lean R':.3,'Likely D':.88,'Likely R':.12,'Solid D':.97,'Solid R':.03}
+# 2024 Trump margin (points, + = Trump) for every state with a 2026 race
+TRM=dict(AL=30.5,AK=13.1,AZ=5.5,AR=30.6,CA=-20.2,CO=-11.0,CT=-14.5,DE=-14.6,FL=13.1,GA=2.2,HI=-25.2,ID=36.0,IL=-10.9,IA=13.2,KS=15.9,KY=25.5,LA=22.0,ME=-6.5,MD=-28.6,MA=-25.2,MI=1.4,MN=-4.2,MS=22.0,MT=19.9,NE=20.5,NV=3.1,NH=-2.8,NJ=-5.9,NM=-6.0,NY=-12.6,NC=3.2,OH=11.2,OK=34.3,OR=-14.3,PA=1.8,RI=-13.9,SC=17.8,SD=29.3,TN=29.8,TX=13.6,VT=-31.9,VA=-5.8,WV=42.0,WI=0.9,WY=46.1)
+SEN_ST='AL AK AR CO DE FL GA ID IL IA KS KY LA ME MA MI MN MS MT NE NH NJ NM NC OH OK OR RI SC SD TN TX VA WV WY'.split()
+GOV_ST='AL AK AZ AR CA CO CT FL GA HI ID IL IA KS ME MD MA MI MN NE NV NH NM NY OH OK OR PA RI SC SD TN TX VT WI WY'.split()
+SEN_TR={k:TRM[k] for k in SEN_ST}
+GOV_TR={k:TRM[k] for k in GOV_ST}
+SEN_ADD,GOV_ADD,GOV_THR=34,6,26  # Dem seats not up in 2026 (Senate 34 of 47; governors 6 of 24); governors majority = 26 of 50
 NM={'AK':'Alaska','OH':'Ohio','TX':'Texas','IA':'Iowa','KS':'Kansas','ME':'Maine','MI':'Michigan','GA':'Georgia','NC':'N. Carolina','NH':'N. Hampshire','MN':'Minnesota','NE':'Nebraska','SC':'S. Carolina','FL':'Florida','LA':'Louisiana','NV':'Nevada','WI':'Wisconsin'}
 def wavg(parts):
     a=b=0
@@ -31,21 +36,23 @@ for key,b in BASE.items():
     H.append(dict(id=key,f=f,pm=pm,ck=c,fund=fu,comp=comp))
 S=[]
 for st,tr in SEN_TR.items():
-    f=inp['sen'][st];pm=inp['pms'].get(st);cat=inp['cooks'].get(st)
+    f=inp['sen'].get(st)
+    if f is None: f=.999 if tr<0 else .001
+    pm=inp['pms'].get(st);cat=inp['cooks'].get(st)
     c=CK[cat] if cat else (.97 if f>.5 else .03)
     fu=float(norm.cdf((-tr+SH)/6.5))
     S.append(dict(id=st,f=f,pm=pm,ck=c,fund=fu,comp=wavg([(f,.35*k),(pm,.25*k),(c,.15*k),(fu,fund_w)])))
 G=[]
 for st,tr in GOV_TR.items():
-    pm=inp['pmg'].get(st);cat=inp['cookg'].get(st);c=CK[cat] if cat else None
-    fu=float(norm.cdf((-tr+SH)/6.5))
+    pm=inp['pmg'].get(st);cat=inp['cookg'].get(st);fu=float(norm.cdf((-tr+SH)/6.5))
+    c=CK[cat] if cat else (.97 if (pm if pm is not None else fu)>.5 else .03)
     G.append(dict(id=st,pm=pm,ck=c,fund=fu,comp=wavg([(pm,.45*(1-fund_w)),(c,.30*(1-fund_w)),(fu,fund_w)])))
 rng=np.random.default_rng(7)
 def sim(ps,rho,add,thr,n=20000):
     z=norm.ppf(np.clip(ps,1e-6,1-1e-6));S_=rng.standard_normal((n,1));e=rng.standard_normal((n,len(ps)))
     w=((np.sqrt(rho)*S_+np.sqrt(1-rho)*e)<z).sum(1)+add
     return dict(mean=float(w.mean()),ctl=float((w>=thr).mean()),lo=int(np.percentile(w,10)),hi=int(np.percentile(w,90)),w=w,thr=thr)
-h=sim(np.array([x['comp'] for x in H]),.309,0,218);s=sim(np.array([x['comp'] for x in S]),.376,47,51);g=sim(np.array([x['comp'] for x in G]),.3,0,5)
+h=sim(np.array([x['comp'] for x in H]),.309,0,218);s=sim(np.array([x['comp'] for x in S]),.376,SEN_ADD,51);g=sim(np.array([x['comp'] for x in G]),.3,GOV_ADD,GOV_THR)
 fo=sim(np.array([x['f'] for x in H]),.309,0,218,5000)
 res=dict(date=str(datetime.date.today()),N=N,house=dict(mean=round(h['mean'],1),ctl=round(h['ctl'],3),lo=h['lo'],hi=h['hi'],fpo_only=round(fo['mean'],1)),
  senate=dict(mean=round(s['mean'],1),ctl=round(s['ctl'],3),lo=s['lo'],hi=s['hi']),gov=dict(mean=round(g['mean'],1),maj=round(g['ctl'],3)),
@@ -82,7 +89,7 @@ def terms(i):
     if i in prev: return prev[i]
     s_=i[:2]
     return 1 if s_ in('TX','FL','OH','NC','MO','CA','UT','LA','TN') else 2 if s_ in('AL','NY','GA') else 3
-CODE={'Toss Up':'T','Lean D':'l','Lean R':'L','Likely D':'k','Likely R':'K'}
+CODE={'Toss Up':'T','Lean D':'l','Lean R':'L','Likely D':'k','Likely R':'K','Solid D':'S','Solid R':'s'}
 def ckcode(p):
     for n,v in CK.items():
         if abs(v-p)<1e-9: return CODE[n]
@@ -93,7 +100,7 @@ As=';'.join('%s,%s'%(x['id'],round(x['comp'],3)) for x in sorted(rest,key=lambda
 Hs=';'.join(','.join(str(v) for v in [x['id'],round(x['f'],3),-1 if x['pm'] is None else round(x['pm'],3),ckcode(x['ck']) if x['id'] in cookh else '',round(max(-30,min(30,BASE[x['id']])),1),terms(x['id'])]) for x in sorted(top,key=lambda x:x['id']))
 Ss=[[x['id'],round(x['f'],3),None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cooks'].get(x['id']),''),SEN_TR[x['id']]] for x in S]
 Gs=[[x['id'],None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cookg'].get(x['id']),''),GOV_TR[x['id']]] for x in G]
-json.dump(dict(asof=res['date'],N0=N,fixed_dem=fixed,sen_add=47,n_listed=66,rho_h=.5,H=Hs,A=As,S=Ss,G=Gs),open(os.path.join(RD,'data.json'),'w'),separators=(',',':'))
+json.dump(dict(asof=res['date'],N0=N,fixed_dem=fixed,sen_add=SEN_ADD,gov_add=GOV_ADD,gov_thr=GOV_THR,n_listed=66,rho_h=.5,H=Hs,A=As,S=Ss,G=Gs),open(os.path.join(RD,'data.json'),'w'),separators=(',',':'))
 hist=[r for r in ld('history.json',[]) if r.get('date')!=res['date']]
 hist.append(dict(date=res['date'],N=N,house_mean=res['house']['mean'],house_ctl=res['house']['ctl'],house_lo=res['house']['lo'],house_hi=res['house']['hi'],fpo_only=res['house']['fpo_only'],senate_mean=res['senate']['mean'],senate_ctl=res['senate']['ctl'],senate_lo=res['senate']['lo'],senate_hi=res['senate']['hi'],gov_mean=res['gov']['mean'],gov_maj=res['gov']['maj']))
 json.dump(hist,open(os.path.join(RD,'history.json'),'w'),separators=(',',':'))
@@ -106,7 +113,7 @@ def stat(x,t,big,l1,l2):
     fig.text(x,.86,t,color=mute,fontsize=9.5);fig.text(x,.805,big,color=D,fontsize=30,weight='bold',family='monospace');fig.text(x,.775,l1,color=ink,fontsize=10);fig.text(x,.752,l2,color=mute,fontsize=9.5)
 stat(.04,'HOUSE · 218 NEEDED',f"{h['mean']:.0f}",f"Dem control {h['ctl']*100:.0f}%",f"80% range {h['lo']}–{h['hi']} seats (FPO alone {fo['mean']:.0f})")
 stat(.37,'SENATE · 51 NEEDED',f"{s['mean']:.1f}",f"Dem control {s['ctl']*100:.0f}%",f"80% range {s['lo']}–{s['hi']} seats")
-stat(.70,'GOVERNORS · 8 TRACKED',f"{g['mean']:.1f}",f"Majority (≥5) {g['ctl']*100:.0f}%",'expected Dem wins')
+stat(.70,'GOVERNORS · 36 RACES',f"{g['mean']:.1f}",f"Majority (≥26 of 50) {g['ctl']*100:.0f}%",'expected Dem governors (of 50)')
 def hist(ax,r,lo,hi,t):
     ax.set_facecolor(panel);xs=np.arange(lo,hi+1);ys=[(r['w']==v).mean()*100 for v in xs]
     ax.bar(xs,ys,color=[D if v>=r['thr'] else R for v in xs],width=.9);ax.axvline(r['thr']-.5,color=ink,ls='--',lw=1)
@@ -118,8 +125,8 @@ def bars(ax,items,t,fs=8):
     ax.barh([a for a,_ in items],[b*100 for _,b in items],color=[D if b>=.5 else R for _,b in items],height=.62);ax.axvline(50,color=ink,lw=.8,ls='--');ax.set_xlim(0,100);ax.set_xticks([])
     for i,(a,b) in enumerate(items): ax.text(min(b*100+1.5,93),i,f"{b*100:.0f}",va='center',color=ink,fontsize=8,family='monospace')
     ax.set_title(t,color=ink,fontsize=11,loc='left');ax.tick_params(colors=mute,labelsize=fs);[sp.set_visible(False) for sp in ax.spines.values()]
-bars(fig.add_axes([.10,.06,.24,.34]),[(NM[x['id']],x['comp']) for x in S],'Senate: Dem win %')
-bars(fig.add_axes([.46,.06,.18,.34]),[(NM[x['id']],x['comp']) for x in G],'Governor: Dem win %')
+bars(fig.add_axes([.10,.06,.24,.34]),[(x['id'],x['comp']) for x in S if .1<x['comp']<.9],'Senate: Dem win % (10-90%)')
+bars(fig.add_axes([.46,.06,.18,.34]),[(x['id'],x['comp']) for x in G if .1<x['comp']<.9],'Governor: Dem win % (10-90%)')
 bars(fig.add_axes([.78,.06,.18,.34]),[(a,b) for a,b in res['close']],'House: 12 closest seats')
 fig.text(.04,.02,'Fundamentals = 2024 presidential + 2024/2022 House results (where lines unchanged) + generic ballot. Does not capture candidate quality.',color=mute,fontsize=8)
 fig.savefig('summary.png',dpi=110,facecolor=bg)

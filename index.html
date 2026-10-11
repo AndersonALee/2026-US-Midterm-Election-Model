@@ -158,7 +158,7 @@ summary{cursor:pointer;color:var(--mute);font-size:.8rem}details.note summary{fo
   <details class="panel tbl" id="tblD"><summary data-i="tblT"></summary>
     <div class="tabs">
       <span class="sp"></span>
-      <button class="chip" id="close" aria-pressed="false" data-i="only"></button>
+      <button class="chip" id="fA" aria-pressed="false" data-i="fAll"></button><button class="chip" id="fC" aria-pressed="true" data-i="fComp"></button>
     </div>
     <div class="legend">
       <span style="--c:var(--f-fpo)">FPO</span><span style="--c:var(--f-pm)">Polymarket</span>
@@ -177,14 +177,14 @@ summary{cursor:pointer;color:var(--mute);font-size:.8rem}details.note summary{fo
 
 <script>
 let CD=null,view='geo',zoomK='us';const ZM={nyc:[870,215,68],la:[89,365,68],chi:[636,228,68],bay:[39,267,56],dc:[825,263,72],phl:[852,237,56],bos:[907,169,52],hou:[510,508,68],dal:[479,440,68],atl:[715,404,68],mia:[817,564,60],det:[710,206,60],sea:[99,49,60],phx:[199,399,60],den:[344,275,56],twin:[541,161,56]};const ZN={en:{us:'Zoom: whole US',nyc:'New York',la:'Los Angeles',chi:'Chicago',bay:'SF Bay Area',dc:'DC / Baltimore',phl:'Philadelphia',bos:'Boston',hou:'Houston',dal:'Dallas–Fort Worth',atl:'Atlanta',mia:'Miami',det:'Detroit',sea:'Seattle',phx:'Phoenix',den:'Denver',twin:'Twin Cities'},zh:{us:'缩放:全国',nyc:'纽约',la:'洛杉矶',chi:'芝加哥',bay:'旧金山湾区',dc:'华盛顿/巴尔的摩',phl:'费城',bos:'波士顿',hou:'休斯敦',dal:'达拉斯-沃思堡',atl:'亚特兰大',mia:'迈阿密',det:'底特律',sea:'西雅图',phx:'凤凰城',den:'丹佛',twin:'双城(明尼阿波利斯)'}};let H=[],S=[],G=[],D0={},HIST=[],lang='en',MP=null,AL=[];
-const CK={T:.5,l:.7,L:.3,k:.88,K:.12};
+const CK={T:.5,l:.7,L:.3,k:.88,K:.12,S:.97,s:.03};
 function Phi(x){const t=1/(1+.2316419*Math.abs(x)),d=.3989423*Math.exp(-x*x/2);const p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p}
 function probit(p){p=Math.min(Math.max(p,1e-6),1-1e-6);let lo=-8,hi=8;for(let i=0;i<40;i++){const m=(lo+hi)/2;Phi(m)<p?lo=m:hi=m}return lo}
 function gauss(){let u=0;while(!u)u=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(6.283185307*Math.random())}
 function wavg(parts){let a=0,b=0;for(const [v,w] of parts){if(v!=null){a+=v*w;b+=w}}return a/b}
 
 const $=id=>document.getElementById(id);
-let state={tab:"H",close:false,sort:"comp",dir:-1};
+let state={tab:"H",close:true,sort:"comp",dir:-1};
 let calc={};
 
 function compute(){
@@ -192,10 +192,10 @@ function compute(){
   const d=N-D0.N0, adj=(p,sg)=>p==null?null:Phi(probit(p)+d/sg);
   H.forEach(h=>{h.fund=Phi((h.base+sh)/5.5);const c=h.ck?CK[h.ck]:(h.f>.5?.97:.03);h.cookP=adj(c,5.5);h.fA=adj(h.f,5.5);h.pA=adj(h.pm,5.5);h.comp=wavg([[h.fA,.35*k],[h.pA,.25*k],[h.cookP,.15*k],[h.fund,fw]])});
   S.forEach(s=>{s.fund=Phi((-s.tr+sh)/6.5);const c=s.ck?CK[s.ck]:(s.f>.5?.97:.03);s.cookP=adj(c,6.5);s.fA=adj(s.f,6.5);s.pA=adj(s.pm,6.5);s.comp=wavg([[s.fA,.35*k],[s.pA,.25*k],[s.cookP,.15*k],[s.fund,fw]])});
-  G.forEach(g=>{g.fund=Phi((-g.tr+sh)/6.5);g.cookP=adj(CK[g.ck],6.5);g.pA=adj(g.pm,6.5);g.comp=wavg([[g.pA,.45*(1-fw)],[g.cookP,.30*(1-fw)],[g.fund,fw]])});
+  G.forEach(g=>{g.fund=Phi((-g.tr+sh)/6.5);g.cookP=adj(g.ck?CK[g.ck]:((g.pm!=null?g.pm:g.fund)>.5?.97:.03),6.5);g.pA=adj(g.pm,6.5);g.comp=wavg([[g.pA,.45*(1-fw)],[g.cookP,.30*(1-fw)],[g.fund,fw]])});
   calc.h=sim(H.map(h=>h.comp),(D0.rho_h||.5),D0.fixed_dem,218,3000);
   calc.s=sim(S.map(s=>s.comp),.376,D0.sen_add,51,5000);
-  calc.g=sim(G.map(g=>g.comp),.3,0,5,5000);
+  calc.g=sim(G.map(g=>g.comp),.3,D0.gov_add,D0.gov_thr,5000);
 }
 function sim(ps,rho,add,thr,n){
   const z=ps.map(probit),a=Math.sqrt(rho),b=Math.sqrt(1-rho),m=ps.length,hist={};let sum=0,ctl=0;const all=[];
@@ -222,21 +222,21 @@ sub:"Data as of {asof} · FPO · Polymarket · Cook · Fundamentals · Drag the 
 natL:"National House vote margin (Democratic lead)",
 natH:"Default D+{N0} (average of FPO and RCP generic ballot). Moving away from it shifts the FPO, Polymarket and Cook signals by the same amount; the table shows shifted values. Fundamentals shift = this value + 1.5.",
 fwL:"Fundamentals weight",fwH:"Other signals scale proportionally: FPO 35 · Polymarket 25 · Cook 15 (governors have no FPO: PM 45 · Cook 30).",
-rst:"Reset sliders",hintT:"How the sliders work",methT:"Method",hT:"House · 218 needed",sT:"Senate · 51 needed",gT:"Governors · 8 tracked states",
-expS:"expected Dem seats",expG:"expected Dem wins",ctl:"Control",rng:"80% range",maj:"Majority (≥5)",
+rst:"Reset sliders",hintT:"How the sliders work",methT:"Method",hT:"House · 218 needed",sT:"Senate · 51 needed",gT:"Governors · 36 races",
+expS:"expected Dem seats",expG:"expected Dem governors (of 50)",ctl:"Control",rng:"80% range",maj:"Majority (≥26 of 50)",
 hD:"House: Democratic seat distribution",sD:"Senate: Democratic seat distribution",
-trT:"Trend across model runs",tblT:"Show data table",vwT:"Switch to tile map",vwG:"Switch to district map",ampSrc:"District boundaries (post-redistricting) © amCharts geodata, linkware license",mapNHg:"Real district boundaries (latest maps after mid-decade redistricting). The 66 closest districts react to the sliders; the other {nr} are fixed. Small urban districts are hard to see here: switch to the tile map.",mapNH:"Each square is one district, grouped by state. The 66 closest districts react to the sliders; the other {nr} are fixed in the simulation (colored by their composite).",mapNS:"Colors follow our own rating and update with the sliders. Hover or tap a state for details.",mapNG:"Eight governor races are tracked. Hover or tap a state for details.",
+trT:"Trend across model runs",tblT:"Show data table",vwT:"Switch to tile map",vwG:"Switch to district map",ampSrc:"District boundaries (post-redistricting) © amCharts geodata, linkware license",mapNHg:"Real district boundaries (latest maps after mid-decade redistricting). The 66 closest districts react to the sliders; the other {nr} are fixed. Small urban districts are hard to see here: switch to the tile map.",mapNH:"Each square is one district, grouped by state. The 66 closest districts react to the sliders; the other {nr} are fixed in the simulation (colored by their composite).",mapNS:"Colors follow our own rating and update with the sliders. Hover or tap a state for details.",mapNG:"All 36 governor races are modeled. Hover or tap a state for details.",
 lgNot:"Not up for reelection",lgAssD:"Solid D, assumed (not modeled)",lgAssR:"Solid R, assumed (not modeled)",lgUp:"Up in 2026, not tracked",lgNoG:"No race in 2026",
 tipSafe:"Not among the 66 closest districts; held fixed in the simulation.",tipAssD:"Up in 2026 but not modeled; treated as a Democratic hold.",tipAssR:"Up in 2026 but not modeled; treated as a Republican hold.",tipNoS:"No Senate race in 2026 (not up for reelection).",tipUpG:"Governor race in 2026, not tracked by this model.",tipNoG:"No governor race in 2026.",
 trEmpty:"The trend appears after the second model run (runs happen every Tuesday and Saturday).",
-trH:"House expected seats (band = 80% range)",trS:"Senate expected seats (band = 80% range)",trC:"Control probability (%)",trG:"Governors: expected Dem wins of 8",hLab:"House",sLab:"Senate",
-tabH:"House",tabS:"Senate",tabG:"Governor",only:"Only 20%–80%",
+trH:"House expected seats (band = 80% range)",trS:"Senate expected seats (band = 80% range)",trC:"Control probability (%)",trG:"Governors: expected Dem governors (of 50)",hLab:"House",sLab:"Senate",
+fAll:"All",fComp:"Competitive (20–80%)",tabH:"House",tabS:"Senate",tabG:"Governor",only:"Only 20%–80%",
 lgC:"Cook-implied",lgF:"Fundamentals",lgR:"Further right = better for Democrats; midline is 50%",
 district:"District",state:"State",fund:"Fund.",comp:"Composite",rate:"Our rating",none:"No seats match this filter",
 rtNote:"Our rating is set from the composite Democratic win probability: Solid ≥95% · Likely 80–95% · Lean 65–80% · Tilt 55–65% · Toss-up 45–55% (mirrored for Republicans). It is separate from Cook's rating.",
 "Solid D":"Solid D","Likely D":"Likely D","Lean D":"Lean D","Tilt D":"Tilt D","Toss-up":"Toss-up","Tilt R":"Tilt R","Lean R":"Lean R","Likely R":"Likely R","Solid R":"Solid R",
 ckT:"Toss Up",ckl:"Lean D",ckL:"Lean R",ckk:"Likely D",ckK:"Likely R",ckS:"Solid",
-method:"Each seat's composite is a weighted average of available signals (missing ones dropped, weights renormalized). Seat totals come from a Gaussian-copula simulation (Senate correlation 0.38; the House is 0.31 across all 435 districts, but this page simulates only the {nl} closest districts, so it uses 0.5 to reproduce the full model's control probability) calibrated so FPO-only seat spread matches FPO's published range. Fundamentals = 2024 presidential margin (0.5) + 2024 House result (0.3) + 2022 House result (0.2) + national shift; district SD 5.5, Senate and governor SD 6.5. TX, FL, OH, NC, MO, CA, UT, LA and TN were redrawn, so both House-result terms are dropped; AL, NY and GA drop 2022 only; districts without a results table use the presidential margin only. GA, NH, MN and NC are treated as Democratic holds and FL and LA as Republican holds, not modeled. The table lists the {nl} closest House districts; the other {nr} are treated as safe ({fx} Democratic). Fundamentals reflect district lean only, not candidate quality, fundraising or scandals.",
+method:"Each seat's composite is a weighted average of available signals (missing ones dropped, weights renormalized). Seat totals come from a Gaussian-copula simulation (Senate correlation 0.38; the House is 0.31 across all 435 districts, but this page simulates only the {nl} closest districts, so it uses 0.5 to reproduce the full model's control probability) calibrated so FPO-only seat spread matches FPO's published range. Fundamentals = 2024 presidential margin (0.5) + 2024 House result (0.3) + 2022 House result (0.2) + national shift; district SD 5.5, Senate and governor SD 6.5. TX, FL, OH, NC, MO, CA, UT, LA and TN were redrawn, so both House-result terms are dropped; AL, NY and GA drop 2022 only; districts without a results table use the presidential margin only. All 35 Senate races and all 36 governor races are modeled (Democrats hold 34 Senate seats and 6 governorships that are not up; Senate majority = 51, governors = 26 of 50). States with a Cook Solid rating get a 97/3 signal. The table lists the {nl} closest House districts; the other {nr} are treated as safe ({fx} Democratic). Fundamentals reflect district lean only, not candidate quality, fundraising or scandals.",
 src:"Source code and data on GitHub",
 names:{AK:"Alaska",OH:"Ohio",TX:"Texas",IA:"Iowa",KS:"Kansas",ME:"Maine",MI:"Michigan",NE:"Nebraska",SC:"South Carolina",NV:"Nevada",WI:"Wisconsin",GA:"Georgia",FL:"Florida"}},
 zh:{title:"2026 年中期选举席位模型",
@@ -244,21 +244,21 @@ sub:"数据截至 {asof} · FPO · Polymarket · Cook · 基本面 · 拖动滑�
 natL:"全国众议院得票差(民主党领先)",
 natH:"默认 D+{N0}(FPO 与 RCP 通用选票的平均)。偏离默认值时,FPO、Polymarket 和 Cook 三个信号会同步移动,表格显示移动后的值。基本面的移动量 = 此值 + 1.5。",
 fwL:"基本面权重",fwH:"其他信号按比例缩放:FPO 35 · Polymarket 25 · Cook 15(州长没有 FPO:Polymarket 45 · Cook 30)。",
-rst:"重置滑块",hintT:"滑块说明",methT:"方法",hT:"众议院 · 需 218 席",sT:"参议院 · 需 51 席",gT:"州长 · 追踪 8 州",
-expS:"民主党预期席位",expG:"民主党预期获胜数",ctl:"控制概率",rng:"80% 区间",maj:"过半(≥5)",
+rst:"重置滑块",hintT:"滑块说明",methT:"方法",hT:"众议院 · 需 218 席",sT:"参议院 · 需 51 席",gT:"州长 · 36 场选举",
+expS:"民主党预期席位",expG:"民主党州长预期数(共 50)",ctl:"控制概率",rng:"80% 区间",maj:"过半(≥26/50)",
 hD:"众议院:民主党席位分布",sD:"参议院:民主党席位分布",
-trT:"各次模型运行的走势",tblT:"显示数据表",vwT:"切换为方块图",vwG:"切换为选区边界图",ampSrc:"选区边界(重划后)© amCharts geodata,linkware 许可",mapNHg:"真实选区边界(中期重划后的最新地图)。最接近的 66 个选区随滑块变化,其余 {nr} 个固定。城市里的小选区在这里很难看清,可切换为方块图。",mapNH:"每个方块代表一个选区,按州分组。最接近的 66 个选区会随滑块变化;其余 {nr} 个在模拟中固定(按各自综合概率着色)。",mapNS:"颜色按本模型评级,随滑块更新。悬停或点按州查看详情。",mapNG:"追踪 8 个州长选举。悬停或点按州查看详情。",
+trT:"各次模型运行的走势",tblT:"显示数据表",vwT:"切换为方块图",vwG:"切换为选区边界图",ampSrc:"选区边界(重划后)© amCharts geodata,linkware 许可",mapNHg:"真实选区边界(中期重划后的最新地图)。最接近的 66 个选区随滑块变化,其余 {nr} 个固定。城市里的小选区在这里很难看清,可切换为方块图。",mapNH:"每个方块代表一个选区,按州分组。最接近的 66 个选区会随滑块变化;其余 {nr} 个在模拟中固定(按各自综合概率着色)。",mapNS:"颜色按本模型评级,随滑块更新。悬停或点按州查看详情。",mapNG:"36 个州长选举全部建模。悬停或点按州查看详情。",
 lgNot:"今年无参议院改选",lgAssD:"稳 D,假定(未建模)",lgAssR:"稳 R,假定(未建模)",lgUp:"2026 年有选举,未追踪",lgNoG:"2026 年无选举",
 tipSafe:"不在最接近的 66 个选区之内,模拟中固定。",tipAssD:"2026 年有选举,但未建模,按民主党守住处理。",tipAssR:"2026 年有选举,但未建模,按共和党守住处理。",tipNoS:"2026 年无参议院选举(不改选)。",tipUpG:"2026 年有州长选举,本模型未追踪。",tipNoG:"2026 年无州长选举。",
 trEmpty:"第二次模型运行之后会显示走势(每周二、周六各运行一次)。",
-trH:"众议院预期席位(阴影 = 80% 区间)",trS:"参议院预期席位(阴影 = 80% 区间)",trC:"控制概率(%)",trG:"州长:民主党预期获胜数(共 8 州)",hLab:"众议院",sLab:"参议院",
-tabH:"众议院",tabS:"参议院",tabG:"州长",only:"仅看 20%–80%",
+trH:"众议院预期席位(阴影 = 80% 区间)",trS:"参议院预期席位(阴影 = 80% 区间)",trC:"控制概率(%)",trG:"州长:民主党州长预期数(共 50)",hLab:"众议院",sLab:"参议院",
+fAll:"全部",fComp:"竞争性(20–80%)",tabH:"众议院",tabS:"参议院",tabG:"州长",only:"仅看 20%–80%",
 lgC:"Cook 隐含",lgF:"基本面",lgR:"越靠右对民主党越有利;中线为 50%",
 district:"选区",state:"州",fund:"基本面",comp:"综合",rate:"本模型评级",none:"没有符合条件的席位",
 rtNote:"本模型评级按民主党获胜的综合概率划分:稳(Solid)≥95% · 很可能(Likely)80–95% · 倾向(Lean)65–80% · 微倾(Tilt)55–65% · 五五开(Toss-up)45–55%,共和党一侧对称。它独立于 Cook 的评级。",
 "Solid D":"稳 D","Likely D":"很可能 D","Lean D":"倾向 D","Tilt D":"微倾 D","Toss-up":"五五开","Tilt R":"微倾 R","Lean R":"倾向 R","Likely R":"很可能 R","Solid R":"稳 R",
 ckT:"五五开",ckl:"倾向 D",ckL:"倾向 R",ckk:"很可能 D",ckK:"很可能 R",ckS:"稳",
-method:"每个席位的综合概率是各可用信号的加权平均(缺失的信号去掉,权重重新归一)。席位总数来自高斯 copula 模拟(参议院相关系数 0.38;众议院在全部 435 个选区上是 0.31,但本页只模拟最接近的 {nl} 个选区,所以取 0.5,使控制概率与完整模型一致),校准到与 FPO 公布的席位波动范围一致。基本面 = 2024 年总统选举差(0.5)+ 2024 年众议院结果(0.3)+ 2022 年众议院结果(0.2)+ 全国环境移动量;选区标准差 5.5,参议院和州长 6.5。TX、FL、OH、NC、MO、CA、UT、LA、TN 重划了选区,所以两项众议院结果都不用;AL、NY、GA 只不用 2022 年;没有结果表的选区只用总统选举差。GA、NH、MN、NC 按民主党守住、FL、LA 按共和党守住处理,不建模。表格列出最接近的 {nl} 个众议院选区;其余 {nr} 个按稳固席位处理(其中 {fx} 个为民主党)。基本面只反映选区倾向,不含候选人质量、筹款或丑闻。",
+method:"每个席位的综合概率是各可用信号的加权平均(缺失的信号去掉,权重重新归一)。席位总数来自高斯 copula 模拟(参议院相关系数 0.38;众议院在全部 435 个选区上是 0.31,但本页只模拟最接近的 {nl} 个选区,所以取 0.5,使控制概率与完整模型一致),校准到与 FPO 公布的席位波动范围一致。基本面 = 2024 年总统选举差(0.5)+ 2024 年众议院结果(0.3)+ 2022 年众议院结果(0.2)+ 全国环境移动量;选区标准差 5.5,参议院和州长 6.5。TX、FL、OH、NC、MO、CA、UT、LA、TN 重划了选区,所以两项众议院结果都不用;AL、NY、GA 只不用 2022 年;没有结果表的选区只用总统选举差。参议院 35 场、州长 36 场选举全部建模(今年不改选的民主党席位:参议院 34、州长 6;参议院过半 = 51,州长过半 = 26/50)。Cook 评为 Solid 的按 97/3 计入。表格列出最接近的 {nl} 个众议院选区;其余 {nr} 个按稳固席位处理(其中 {fx} 个为民主党)。基本面只反映选区倾向,不含候选人质量、筹款或丑闻。",
 src:"源代码和数据(GitHub)",
 names:{AK:"阿拉斯加",OH:"俄亥俄",TX:"德克萨斯",IA:"艾奥瓦",KS:"堪萨斯",ME:"缅因",MI:"密歇根",NE:"内布拉斯加",SC:"南卡罗来纳",NV:"内华达",WI:"威斯康星",GA:"佐治亚",FL:"佛罗里达"}}
 };
@@ -283,7 +283,7 @@ const LAY={AK:[0,0],ME:[10,0],VT:[9,1],NH:[10,1],WA:[0,2],ID:[1,2],MT:[2,2],ND:[
 const SEN_D=new Set("CO DE IL MA NJ NM OR RI VA GA NH MN NC".split(" ")),SEN_R=new Set("AL AR ID KY MS MT OK SD TN WV WY FL LA".split(" "));
 const GOV_UP=new Set("AL AK AZ AR CA CO CT FL GA HI ID IA KS ME MD MA MI MN NE NV NH NM NY OH OK OR PA RI SC SD TN TX VT WI WY".split(" "));
 const rc=p=>{const n=ratingOf(p)[0];if(n==='Toss-up')return'cT';return'c'+n.slice(-1)+{Solid:4,Likely:3,Lean:2,Tilt:1}[n.split(' ')[0]]};
-const ckl2=c=>c?t('ck'+c):t('ckS');
+const ckl2=c=>c==='S'?t('Solid D'):c==='s'?t('Solid R'):c?t('ck'+c):t('ckS');
 const pc=v=>v==null?'–':Math.round(v*100);
 function sig(x){return `FPO ${pc(x.fA)} · PM ${pc(x.pA)} · Cook ${ckl2(x.ck)} · ${t('fund')} ${pc(x.fund)}`}
 function tipHead(name,p){const [n,c]=ratingOf(p);return `<b>${name}</b> <span class="rt ${c}">${t(n)}</span><br>${t('comp')}: ${pc(p)}% D`}
@@ -316,7 +316,7 @@ function mapRender(){
       if(x)c=rc(x.comp);else if(T==="S")c=SEN_D.has(st)?'cAD':SEN_R.has(st)?'cAR':'cN';else c=GOV_UP.has(st)?'cU':'cN';
       h+=`<path class="m ${c}" d="${MP.p[st]}" data-k="${T}:${st}"/>`});
     Object.keys(MP.l).forEach(st=>{const l=MP.l[st];if(st!=="DC"&&l[2]>30)h+=`<text class="sl2" x="${l[0]}" y="${l[1]+4}">${st}</text>`});
-    if(T==="S"){lg.push(sw('cAD',t('lgAssD')),sw('cAR',t('lgAssR')),sw('cN',t('lgNot')))}else{lg.push(sw('cU',t('lgUp')),sw('cN',t('lgNoG')))}
+    if(T==="S"){lg.push(sw('cN',t('lgNot')))}else{lg.push(sw('cN',t('lgNoG')))}
   }
   svg.innerHTML=`<defs><pattern id="pD" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" style="fill:var(--line)"/><rect width="3.5" height="7" style="fill:var(--dem)"/></pattern><pattern id="pR" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" style="fill:var(--line)"/><rect width="3.5" height="7" style="fill:var(--rep)"/></pattern><pattern id="pU" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" style="fill:var(--bg)"/><rect width="2" height="7" style="fill:var(--mute)"/></pattern></defs>`+h;$("mapLg").innerHTML=lg.join("");
   $("mapNote").innerHTML=fill(t(T==="H"?(view==='geo'&&CD?'mapNHg':'mapNH'):T==="S"?'mapNS':'mapNG'));
@@ -328,23 +328,24 @@ function render(){
   const h=calc.h,s=calc.s,g=calc.g;
   $("hExp").textContent=Math.round(h.mean);$("hCtl").textContent=pct(h.ctl);$("hRng").textContent=h.lo+"–"+h.hi;$("hBar").style.width=Math.min(100,h.mean/435*100)+"%";
   $("sExp").textContent=s.mean.toFixed(1);$("sCtl").textContent=pct(s.ctl);$("sRng").textContent=s.lo+"–"+s.hi;$("sBar").style.width=s.mean+"%";
-  $("gExp").textContent=g.mean.toFixed(1);$("gCtl").textContent=pct(g.ctl);$("gBar").style.width=g.mean/8*100+"%";
+  $("gExp").textContent=g.mean.toFixed(1);$("gCtl").textContent=pct(g.ctl);$("gBar").style.width=g.mean/50*100+"%";
   histSvg($("hSvg"),h,D0.fixed_dem-17,D0.fixed_dem+78);histSvg($("sSvg"),s,41,62);
-  const T=state.tab;$("cH").hidden=T!=="H";$("cS").hidden=T!=="S";$("cG").hidden=T!=="G";$("dH").hidden=T!=="H";$("dS").hidden=T!=="S";$("close").hidden=T==="G";
+  const T=state.tab;$("cH").hidden=T!=="H";$("cS").hidden=T!=="S";$("cG").hidden=T!=="G";$("dH").hidden=T!=="H";$("dS").hidden=T!=="S";
   ["tH","tS","tG"].forEach(i=>$(i).setAttribute("aria-pressed",i==="t"+T));
   mapRender();table();trend();
 }
 function table(){
   const tb=state.tab;let rows;
   const cols=[["name",tb==="H"?t('district'):t('state')],["fpo","FPO"],["pm","PM"],["ck","Cook"],["fund",t('fund')],["comp",t('comp')],["rate",t('rate')]];
-  const ckl=c=>c?t('ck'+c):t('ckS');
+  const ckl=ckl2;
   if(tb==="H")rows=H.map(h=>({n:h.id,name:h.id+(h.terms<3?`<span class="tag" style="margin-left:6px" title="${lang==='zh'?(h.terms===1?'仅用总统选举差':'3 项中用 2 项'):(h.terms===1?'presidential margin only':'2 of 3 terms')}">${h.terms}t</span>`:""),fpo:h.fA,pm:h.pA,ck:ckl(h.ck),fund:h.fund,comp:h.comp,cookP:h.cookP}));
+  if(tb==="H"&&!state.close)rows=rows.concat(AL.filter(d=>!d.h).map(d=>({n:d.id,name:d.id,fpo:null,pm:null,ck:'–',fund:null,comp:d.c,cookP:null})));
   else if(tb==="S")rows=S.map(x=>({n:x.id,name:sname(x.id),fpo:x.fA,pm:x.pA,ck:ckl(x.ck),fund:x.fund,comp:x.comp,cookP:x.cookP}));
   else rows=G.map(x=>({n:x.id,name:sname(x.id),fpo:null,pm:x.pA,ck:ckl(x.ck),fund:x.fund,comp:x.comp,cookP:x.cookP}));
   if(state.close)rows=rows.filter(r=>r.comp>=.2&&r.comp<=.8);
   const key=state.sort==="rate"?"comp":state.sort;rows.sort((a,b)=>{const va=key==="name"?a.n:key==="ck"?a.cookP:a[key],vb=key==="name"?b.n:key==="ck"?b.cookP:b[key];return ((va??-1)>(vb??-1)?1:-1)*state.dir});
   $("thead").innerHTML="<tr>"+cols.map(c=>`<th scope="col" data-k="${c[0]}">${c[1]}${state.sort===c[0]?(state.dir<0?" ↓":" ↑"):""}</th>`).join("")+"</tr>";
-  $("tbody").innerHTML=rows.map(r=>`<tr><td>${r.name}</td><td class="n">${r.fpo==null?"–":Math.round(r.fpo*100)}</td><td class="n">${r.pm==null?"–":Math.round(r.pm*100)}</td><td>${r.ck}</td><td class="n">${Math.round(r.fund*100)}</td><td>${compCell(r.comp)}</td><td>${rateCell(r.comp)}</td></tr>`).join("")||`<tr><td colspan=7>${t('none')}</td></tr>`;
+  $("tbody").innerHTML=rows.map(r=>`<tr><td>${r.name}</td><td class="n">${r.fpo==null?"–":Math.round(r.fpo*100)}</td><td class="n">${r.pm==null?"–":Math.round(r.pm*100)}</td><td>${r.ck}</td><td class="n">${r.fund==null?"–":Math.round(r.fund*100)}</td><td>${compCell(r.comp)}</td><td>${rateCell(r.comp)}</td></tr>`).join("")||`<tr><td colspan=7>${t('none')}</td></tr>`;
 }
 function lines(rows,series,lo,hi,band){
   const W=400,Hh=150,pl=30,pr=8,pt=8,pb=22,n=rows.length,X=i=>pl+(n===1?0:i*(W-pl-pr)/(n-1)),Y=v=>pt+(hi-v)/(hi-lo)*(Hh-pt-pb);let s="";
@@ -363,7 +364,7 @@ function trend(){
   let c1,c2;
   if(T==="H"){const [l,h]=rg(['house_lo','house_hi']);c1=`<div class="card"><h2>${t('trH')}</h2>${lines(R,[{k:'house_mean',c:'var(--dem)'}],l,h,['house_lo','house_hi'])}</div>`;c2=`<div class="card"><h2>${t('trC')}</h2>${lines(R,[{k:'hc',c:'var(--dem)'}],0,100)}</div>`}
   else if(T==="S"){const [l,h]=rg(['senate_lo','senate_hi']);c1=`<div class="card"><h2>${t('trS')}</h2>${lines(R,[{k:'senate_mean',c:'var(--dem)'}],l,h,['senate_lo','senate_hi'])}</div>`;c2=`<div class="card"><h2>${t('trC')}</h2>${lines(R,[{k:'sc',c:'var(--dem)'}],0,100)}</div>`}
-  else{const [l,h]=rg(['gov_mean']);c1=`<div class="card"><h2>${t('trG')}</h2>${lines(R,[{k:'gov_mean',c:'var(--dem)'}],Math.max(0,l),Math.min(8,h))}</div>`;c2=`<div class="card"><h2>${t('trC')}</h2>${lines(R,[{k:'gc',c:'var(--dem)'}],0,100)}</div>`}
+  else{const [l,h]=rg(['gov_mean']);c1=`<div class="card"><h2>${t('trG')}</h2>${lines(R,[{k:'gov_mean',c:'var(--dem)'}],Math.max(0,l),Math.min(50,h))}</div>`;c2=`<div class="card"><h2>${t('trC')}</h2>${lines(R,[{k:'gc',c:'var(--dem)'}],0,100)}</div>`}
   el.innerHTML=`<div class="chartwrap">${c1}${c2}</div>`;
 }
 async function init(){
@@ -386,7 +387,8 @@ async function init(){
   const setTab=tb=>{state.tab=tb;state.sort="comp";state.dir=-1;try{history.replaceState(null,"","#"+HR[tb])}catch(e){}render()};
   [["tH","H"],["tS","S"],["tG","G"]].forEach(([id,tb])=>$(id).addEventListener("click",()=>setTab(tb)));
   if(HM[location.hash.slice(1)])state.tab=HM[location.hash.slice(1)];
-  $("close").addEventListener("click",()=>{state.close=!state.close;$("close").setAttribute("aria-pressed",state.close);table()});
+  const setF=v=>{state.close=v;$("fC").setAttribute("aria-pressed",v);$("fA").setAttribute("aria-pressed",!v);table()};
+  $("fC").addEventListener("click",()=>setF(true));$("fA").addEventListener("click",()=>setF(false));
   $("zm").addEventListener("change",e=>{zoomK=e.target.value;mapRender()});
   $("vw").addEventListener("click",()=>{view=view==='geo'?'tile':'geo';render()});
   const tip=$("tip"),svgm=$("mapSvg");
