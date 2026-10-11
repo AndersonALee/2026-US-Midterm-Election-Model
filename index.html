@@ -397,7 +397,7 @@ function render(){
 }
 function table(){
   const tb=state.tab;let rows;
-  const cols=[["name",tb==="H"?t('district'):t('state')],["fpo",t("inst")],["pm","PM"],["ck","Cook"]].concat(tb==="H"?[]:[["poll",t('pollsCol')]]).concat([["fund",t('fund')],["comp",t('comp')],["close",t('close')],["rate",t('rate')]]);
+  const cols=[["name",tb==="H"?t('district'):t('state')],["fpo",t("inst")],["pm","PM"]].concat(tb==="H"?[]:[["poll",t('pollsCol')]]).concat([["fund",t('fund')],["comp",t('comp')],["close",t('close')],["rate",t('rate')]]);
   const ckl=ckl2;
   if(tb==="H")rows=H.map(h=>({n:h.id,name:h.id+(h.terms<3?`<span class="tag" style="margin-left:6px" title="${lang==='zh'?(h.terms===1?'仅用总统选举差':'3 项中用 2 项'):(h.terms===1?'presidential margin only':'2 of 3 terms')}">${h.terms}t</span>`:""),fpo:h.iA,pm:h.pA,ck:ckl(h.ck),fund:h.fund,comp:h.comp,cookP:h.cookP}));
   if(tb==="H"){if(!state.close)rows=rows.concat(AL.filter(d=>!d.h).map(d=>({n:d.id,name:d.id,fpo:null,pm:null,ck:'–',fund:null,comp:d.c,cookP:null})))}
@@ -407,7 +407,7 @@ function table(){
   if(state.close)rows=rows.filter(r=>r.comp>=.2&&r.comp<=.8);
   const key=state.sort==="rate"?"comp":state.sort;rows.sort((a,b)=>{const va=key==="name"?a.n:key==="ck"?a.cookP:a[key],vb=key==="name"?b.n:key==="ck"?b.cookP:b[key];return ((va??-1)>(vb??-1)?1:-1)*state.dir});
   $("thead").innerHTML="<tr>"+cols.map(c=>`<th scope="col" data-k="${c[0]}"${c[0]==="fund"||c[0]==="close"?' class="ctr"':''}>${c[1]}${state.sort===c[0]?(state.dir<0?" ↓":" ↑"):""}</th>`).join("")+"</tr>";
-  $("tbody").innerHTML=rows.map(r=>`<tr><td>${r.name}</td><td class="n">${r.fpo==null?"–":Math.round(r.fpo*100)}</td><td class="n">${r.pm==null?"–":Math.round(r.pm*100)}</td><td>${r.ck}</td>${tb==="H"?"":`<td class="n">${r.poll==null?"–":Math.round(r.poll*100)}</td>`}<td class="n ctr">${r.fund==null?"–":Math.round(r.fund*100)}</td><td>${compCell(r.comp)}</td><td class="n ctr">${Math.round(r.close*100)}</td><td>${rateCell(r.comp)}</td></tr>`).join("")||`<tr><td colspan=8>${t('none')}</td></tr>`;
+  $("tbody").innerHTML=rows.map(r=>`<tr><td>${r.name}</td><td class="n">${r.fpo==null?"–":Math.round(r.fpo*100)}</td><td class="n">${r.pm==null?"–":Math.round(r.pm*100)}</td>${tb==="H"?"":`<td class="n">${r.poll==null?"–":Math.round(r.poll*100)}</td>`}<td class="n ctr">${r.fund==null?"–":Math.round(r.fund*100)}</td><td>${compCell(r.comp)}</td><td class="n ctr">${Math.round(r.close*100)}</td><td>${rateCell(r.comp)}</td></tr>`).join("")||`<tr><td colspan=7>${t('none')}</td></tr>`;
 }
 function lines(rows,series,lo,hi,band){
   const W=400,Hh=150,pl=30,pr=8,pt=8,pb=22,n=rows.length,X=i=>pl+(n===1?0:i*(W-pl-pr)/(n-1)),Y=v=>pt+(hi-v)/(hi-lo)*(Hh-pt-pb);let s="";
