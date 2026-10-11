@@ -38,11 +38,16 @@ def poll_sig(r):
         ps=[p for p in r.get('polls',[]) if p[1] and 0<=(TODAY-datetime.date.fromisoformat(p[1])).days<=60]
         if not ps: return None,0,None
         dd=sum(p[2] for p in ps)/len(ps);rr=sum(p[3] for p in ps)/len(ps)
-    age=(TODAY-datetime.date.fromisoformat(r['last'])).days;n=r['n']
+    last=r['last'];n=r['n']
+    # xp = extra polls from the @IAPolls2022 feed that are not yet in the RCP list: [pollster, date, D, R, url]; folded into the average as extra polls
+    xp=[p for p in r.get('xp',[]) if p[1] and 0<=(TODAY-datetime.date.fromisoformat(p[1])).days<=60]
+    if xp:
+        dd=(dd*n+sum(p[2] for p in xp))/(n+len(xp));rr=(rr*n+sum(p[3] for p in xp))/(n+len(xp));n+=len(xp);last=max([last]+[p[1] for p in xp])
+    age=(TODAY-datetime.date.fromisoformat(last)).days
     mult=1.0 if age<=14 else max(.4,1-(age-14)*.6/46)
     if n<3: mult*=.75
     sg=6.0 if n>=3 else 7.5
-    return float(norm.cdf((dd-rr)/sg)),round(mult,2),[round(dd,1),round(rr,1),n,r['last']]
+    return float(norm.cdf((dd-rr)/sg)),round(mult,2),[round(dd,1),round(rr,1),n,last]
 # weights at the default 15% fundamentals weight (they scale with the slider): Senate Polls .30 FPO .25 PM .20 Cook .10; Governor Polls .43 PM .28 Cook .14 (no FPO); House FPO .40 PM .28 Cook .17
 cookh={}
 for cat,keys in inp['cookh'].items():

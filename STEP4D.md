@@ -1,0 +1,16 @@
+# STEP 4D – fold new @IAPolls2022 polls into polls.json (Senate + governor only)
+
+Stateless: redo it from the feed doc every run, because polls.json is rebuilt from RCP each run. A poll that RCP has meanwhile picked up is then a duplicate and drops out by itself.
+
+Inputs: /tmp/seatmodel/repo/polls.json (just written by STEP 4C, every race has `polls` = [[pollster, endDate, D, R], ...] and often aD/aR = RCP average), and the doc "New Polls Feed (@IAPolls2022)" (container {"kind":"project","id":"adf4247f-a322-4fc3-b2f5-bb3c7775c7e5"}, body node f0503276-7328; read the outline and the entries from the last 10 days under "## Feed (newest first)").
+
+1. Collect candidates: every Senate or governor bullet with a two-way D vs R result and field end date within the last 30 days. Skip House, president approval, generic ballot, and polls with a missing number. Take D = the candidate polls.json lists as D for that state (Montana: Bodnar; Nebraska: Osborn; Alaska governor: Kreiss-Tomkins) and R likewise; if the bullet does not clearly show those two, put it under review instead of the model. Key = pollster, race (S or G + state code), end date, D, R, post URL. Drop duplicates inside the feed (same post URL or same pollster+race+dates).
+2. Normalize pollster names: lowercase, remove everything but letters and digits, drop the words poll, polls, polling, research, survey, surveys, group, college, university, and (R)/(D)/sponsor tags. Aliases: "insideradvantage" = "insider advantage"; "emerson" = "emerson college"; "quantus" = "quantus insights"; "atlasintel" = "atlas intel". Treat two names as the same if equal or one contains the other (length >= 5).
+3. Compare each candidate with the RCP polls of the same race in polls.json:
+   - DUPLICATE (drop silently): same pollster and end date within 1 day and D and R each within 1 point.
+   - NEW (goes to the model): no RCP poll of the same pollster with an end date within 4 days either side.
+   - UNCERTAIN (not into the model): everything else, e.g. same pollster and date but numbers differ (different population such as LV vs RV), end date 2-4 days apart, or numbers differ by more than 1 point.
+   If the race has no `polls` list in polls.json (old file), treat the whole day as UNCERTAIN and do not add anything.
+4. NEW polls: append to that race's record in polls.json as `xp`: [[pollster, "YYYY-MM-DD", D, R, "post URL"], ...]. The model folds them into the RCP average as extra polls (poll_sig in model.py). If the race has no record in polls.json at all, create one: {"D": name, "R": name, "n": k, "last": latest date, "polls": [[pollster, date, D, R], ...]} (no xp then, to avoid double counting). Keep everything else in polls.json unchanged.
+5. UNCERTAIN polls: add one bullet each to the doc section "## Needs review (not in model)" (create it at the END of the doc body if missing) unless its post URL is already there: "<race>: <pollster>, <dates>, D x / R y – why unsure (closest RCP poll: ...). [post](url)". The user looks at this section only occasionally; do not add to the model.
+6. Report in the Daily Summary entry: "X-feed polls: n added, d duplicates dropped, u under review". Count RCP polls from the lists only for the Senate/governor races.
