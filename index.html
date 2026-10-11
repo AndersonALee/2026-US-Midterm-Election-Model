@@ -81,6 +81,8 @@ th.n{text-align:right}
 .lg span::before{content:"";display:inline-block;width:14px;height:3px;margin-right:5px;vertical-align:middle;background:var(--c)}
 svg .ln{fill:none;stroke-width:1.8}svg .bd{opacity:.18}
 a{color:var(--dem)}
+[hidden]{display:none!important}
+summary{cursor:pointer;color:var(--mute);font-size:.8rem}details.note summary{font-weight:600;color:var(--ink)}
 </style></head><body>
 <div class="wrap">
   <header class="hd"><div>
@@ -93,34 +95,39 @@ a{color:var(--dem)}
     <div>
       <label for="nat"><span data-i="natL"></span><output id="natO"></output></label>
       <input id="nat" type="range" min="0" max="12" step="0.1" value="7.8">
-      <div class="hint" data-i="natH"></div>
     </div>
     <div>
       <label for="fw"><span data-i="fwL"></span><output id="fwO"></output></label>
       <input id="fw" type="range" min="0" max="60" step="5" value="25">
-      <div class="hint" data-i="fwH"></div>
     </div>
     <button id="rst" type="button" data-i="rst"></button>
+    <details class="hint" style="grid-column:1/-1"><summary data-i="hintT"></summary><p data-i="natH" style="margin:6px 0 0"></p><p data-i="fwH" style="margin:4px 0 0"></p></details>
   </section>
 
+  <nav class="tabs" role="group" aria-label="Chamber">
+    <button id="tH" aria-pressed="true" data-i="tabH"></button>
+    <button id="tS" aria-pressed="false" data-i="tabS"></button>
+    <button id="tG" aria-pressed="false" data-i="tabG"></button>
+  </nav>
+
   <section class="read" aria-label="Overview">
-    <div class="card"><h2 data-i="hT"></h2>
+    <div class="card" id="cH"><h2 data-i="hT"></h2>
       <div class="big"><span id="hExp"></span><small data-i="expS"></small></div>
       <div class="row"><span data-i="ctl"></span> <b id="hCtl"></b> <span data-i="rng"></span> <b id="hRng"></b></div>
       <div class="bar"><i id="hBar"></i></div></div>
-    <div class="card"><h2 data-i="sT"></h2>
+    <div class="card" id="cS"><h2 data-i="sT"></h2>
       <div class="big"><span id="sExp"></span><small data-i="expS"></small></div>
       <div class="row"><span data-i="ctl"></span> <b id="sCtl"></b> <span data-i="rng"></span> <b id="sRng"></b></div>
       <div class="bar"><i id="sBar"></i></div></div>
-    <div class="card"><h2 data-i="gT"></h2>
+    <div class="card" id="cG"><h2 data-i="gT"></h2>
       <div class="big"><span id="gExp"></span><small data-i="expG"></small></div>
       <div class="row"><span data-i="maj"></span> <b id="gCtl"></b></div>
       <div class="bar"><i id="gBar"></i></div></div>
   </section>
 
   <section class="chartwrap" aria-label="Seat distribution">
-    <div class="card"><h2 data-i="hD"></h2><svg id="hSvg" viewBox="0 0 400 150" role="img"></svg></div>
-    <div class="card"><h2 data-i="sD"></h2><svg id="sSvg" viewBox="0 0 400 150" role="img"></svg></div>
+    <div class="card" id="dH"><h2 data-i="hD"></h2><svg id="hSvg" viewBox="0 0 400 150" role="img"></svg></div>
+    <div class="card" id="dS"><h2 data-i="sD"></h2><svg id="sSvg" viewBox="0 0 400 150" role="img"></svg></div>
   </section>
 
   <section class="panel" id="trend">
@@ -129,10 +136,7 @@ a{color:var(--dem)}
   </section>
 
   <section class="panel">
-    <div class="tabs" role="group" aria-label="Chamber">
-      <button id="tH" aria-pressed="true" data-i="tabH"></button>
-      <button id="tS" aria-pressed="false" data-i="tabS"></button>
-      <button id="tG" aria-pressed="false" data-i="tabG"></button>
+    <div class="tabs">
       <span class="sp"></span>
       <button class="chip" id="close" aria-pressed="false" data-i="only"></button>
     </div>
@@ -145,7 +149,7 @@ a{color:var(--dem)}
     <p class="note" style="margin-top:10px" data-i="rtNote"></p>
   </section>
 
-  <p class="note" data-i="method"></p>
+  <details class="note"><summary data-i="methT"></summary><p data-i="method"></p></details>
   <p class="note"><a href="https://github.com/zhirun-blip/2026-US-Midterm-Election-Model" data-i="src"></a></p>
 </div>
 
@@ -196,18 +200,18 @@ sub:"Data as of {asof} · FPO · Polymarket · Cook · Fundamentals · Drag the 
 natL:"National House vote margin (Democratic lead)",
 natH:"Default D+{N0} (average of FPO and RCP generic ballot). Moving away from it shifts the FPO, Polymarket and Cook signals by the same amount; the table shows shifted values. Fundamentals shift = this value + 1.5.",
 fwL:"Fundamentals weight",fwH:"Other signals scale proportionally: FPO 35 · Polymarket 25 · Cook 15 (governors have no FPO: PM 45 · Cook 30).",
-rst:"Reset sliders",hT:"House · 218 needed",sT:"Senate · 51 needed",gT:"Governors · 8 tracked states",
+rst:"Reset sliders",hintT:"How the sliders work",methT:"Method",hT:"House · 218 needed",sT:"Senate · 51 needed",gT:"Governors · 8 tracked states",
 expS:"expected Dem seats",expG:"expected Dem wins",ctl:"Control",rng:"80% range",maj:"Majority (≥5)",
 hD:"House: Democratic seat distribution",sD:"Senate: Democratic seat distribution",
 trT:"Trend across model runs",trEmpty:"The trend appears after the second model run (runs happen every Tuesday and Saturday).",
-trH:"House expected seats (band = 80% range)",trS:"Senate expected seats (band = 80% range)",trC:"Control probability (%)",hLab:"House",sLab:"Senate",
+trH:"House expected seats (band = 80% range)",trS:"Senate expected seats (band = 80% range)",trC:"Control probability (%)",trG:"Governors: expected Dem wins of 8",hLab:"House",sLab:"Senate",
 tabH:"House",tabS:"Senate",tabG:"Governor",only:"Only 20%–80%",
 lgC:"Cook-implied",lgF:"Fundamentals",lgR:"Further right = better for Democrats; midline is 50%",
 district:"District",state:"State",fund:"Fund.",comp:"Composite",rate:"Our rating",none:"No seats match this filter",
 rtNote:"Our rating is set from the composite Democratic win probability: Solid ≥95% · Likely 80–95% · Lean 65–80% · Tilt 55–65% · Toss-up 45–55% (mirrored for Republicans). It is separate from Cook's rating.",
 "Solid D":"Solid D","Likely D":"Likely D","Lean D":"Lean D","Tilt D":"Tilt D","Toss-up":"Toss-up","Tilt R":"Tilt R","Lean R":"Lean R","Likely R":"Likely R","Solid R":"Solid R",
 ckT:"Toss Up",ckl:"Lean D",ckL:"Lean R",ckk:"Likely D",ckK:"Likely R",ckS:"Solid",
-method:"<b>Method.</b> Each seat's composite is a weighted average of available signals (missing ones dropped, weights renormalized). Seat totals come from a Gaussian-copula simulation (Senate correlation 0.38; the House is 0.31 across all 435 districts, but this page simulates only the {nl} closest districts, so it uses 0.5 to reproduce the full model's control probability) calibrated so FPO-only seat spread matches FPO's published range. Fundamentals = 2024 presidential margin (0.5) + 2024 House result (0.3) + 2022 House result (0.2) + national shift; district SD 5.5, Senate and governor SD 6.5. TX, FL, OH, NC, MO, CA, UT, LA and TN were redrawn, so both House-result terms are dropped; AL, NY and GA drop 2022 only; districts without a results table use the presidential margin only. GA, NH, MN and NC are treated as Democratic holds and FL and LA as Republican holds, not modeled. The table lists the {nl} closest House districts; the other {nr} are treated as safe ({fx} Democratic). Fundamentals reflect district lean only, not candidate quality, fundraising or scandals.",
+method:"Each seat's composite is a weighted average of available signals (missing ones dropped, weights renormalized). Seat totals come from a Gaussian-copula simulation (Senate correlation 0.38; the House is 0.31 across all 435 districts, but this page simulates only the {nl} closest districts, so it uses 0.5 to reproduce the full model's control probability) calibrated so FPO-only seat spread matches FPO's published range. Fundamentals = 2024 presidential margin (0.5) + 2024 House result (0.3) + 2022 House result (0.2) + national shift; district SD 5.5, Senate and governor SD 6.5. TX, FL, OH, NC, MO, CA, UT, LA and TN were redrawn, so both House-result terms are dropped; AL, NY and GA drop 2022 only; districts without a results table use the presidential margin only. GA, NH, MN and NC are treated as Democratic holds and FL and LA as Republican holds, not modeled. The table lists the {nl} closest House districts; the other {nr} are treated as safe ({fx} Democratic). Fundamentals reflect district lean only, not candidate quality, fundraising or scandals.",
 src:"Source code and data on GitHub",
 names:{AK:"Alaska",OH:"Ohio",TX:"Texas",IA:"Iowa",KS:"Kansas",ME:"Maine",MI:"Michigan",NE:"Nebraska",SC:"South Carolina",NV:"Nevada",WI:"Wisconsin",GA:"Georgia",FL:"Florida"}},
 zh:{title:"2026 年中期选举席位模型",
@@ -215,18 +219,18 @@ sub:"数据截至 {asof} · FPO · Polymarket · Cook · 基本面 · 拖动滑�
 natL:"全国众议院得票差(民主党领先)",
 natH:"默认 D+{N0}(FPO 与 RCP 通用选票的平均)。偏离默认值时,FPO、Polymarket 和 Cook 三个信号会同步移动,表格显示移动后的值。基本面的移动量 = 此值 + 1.5。",
 fwL:"基本面权重",fwH:"其他信号按比例缩放:FPO 35 · Polymarket 25 · Cook 15(州长没有 FPO:Polymarket 45 · Cook 30)。",
-rst:"重置滑块",hT:"众议院 · 需 218 席",sT:"参议院 · 需 51 席",gT:"州长 · 追踪 8 州",
+rst:"重置滑块",hintT:"滑块说明",methT:"方法",hT:"众议院 · 需 218 席",sT:"参议院 · 需 51 席",gT:"州长 · 追踪 8 州",
 expS:"民主党预期席位",expG:"民主党预期获胜数",ctl:"控制概率",rng:"80% 区间",maj:"过半(≥5)",
 hD:"众议院:民主党席位分布",sD:"参议院:民主党席位分布",
 trT:"各次模型运行的走势",trEmpty:"第二次模型运行之后会显示走势(每周二、周六各运行一次)。",
-trH:"众议院预期席位(阴影 = 80% 区间)",trS:"参议院预期席位(阴影 = 80% 区间)",trC:"控制概率(%)",hLab:"众议院",sLab:"参议院",
+trH:"众议院预期席位(阴影 = 80% 区间)",trS:"参议院预期席位(阴影 = 80% 区间)",trC:"控制概率(%)",trG:"州长:民主党预期获胜数(共 8 州)",hLab:"众议院",sLab:"参议院",
 tabH:"众议院",tabS:"参议院",tabG:"州长",only:"仅看 20%–80%",
 lgC:"Cook 隐含",lgF:"基本面",lgR:"越靠右对民主党越有利;中线为 50%",
 district:"选区",state:"州",fund:"基本面",comp:"综合",rate:"本模型评级",none:"没有符合条件的席位",
 rtNote:"本模型评级按民主党获胜的综合概率划分:稳(Solid)≥95% · 很可能(Likely)80–95% · 倾向(Lean)65–80% · 微倾(Tilt)55–65% · 五五开(Toss-up)45–55%,共和党一侧对称。它独立于 Cook 的评级。",
 "Solid D":"稳 D","Likely D":"很可能 D","Lean D":"倾向 D","Tilt D":"微倾 D","Toss-up":"五五开","Tilt R":"微倾 R","Lean R":"倾向 R","Likely R":"很可能 R","Solid R":"稳 R",
 ckT:"五五开",ckl:"倾向 D",ckL:"倾向 R",ckk:"很可能 D",ckK:"很可能 R",ckS:"稳",
-method:"<b>方法。</b>每个席位的综合概率是各可用信号的加权平均(缺失的信号去掉,权重重新归一)。席位总数来自高斯 copula 模拟(参议院相关系数 0.38;众议院在全部 435 个选区上是 0.31,但本页只模拟最接近的 {nl} 个选区,所以取 0.5,使控制概率与完整模型一致),校准到与 FPO 公布的席位波动范围一致。基本面 = 2024 年总统选举差(0.5)+ 2024 年众议院结果(0.3)+ 2022 年众议院结果(0.2)+ 全国环境移动量;选区标准差 5.5,参议院和州长 6.5。TX、FL、OH、NC、MO、CA、UT、LA、TN 重划了选区,所以两项众议院结果都不用;AL、NY、GA 只不用 2022 年;没有结果表的选区只用总统选举差。GA、NH、MN、NC 按民主党守住、FL、LA 按共和党守住处理,不建模。表格列出最接近的 {nl} 个众议院选区;其余 {nr} 个按稳固席位处理(其中 {fx} 个为民主党)。基本面只反映选区倾向,不含候选人质量、筹款或丑闻。",
+method:"每个席位的综合概率是各可用信号的加权平均(缺失的信号去掉,权重重新归一)。席位总数来自高斯 copula 模拟(参议院相关系数 0.38;众议院在全部 435 个选区上是 0.31,但本页只模拟最接近的 {nl} 个选区,所以取 0.5,使控制概率与完整模型一致),校准到与 FPO 公布的席位波动范围一致。基本面 = 2024 年总统选举差(0.5)+ 2024 年众议院结果(0.3)+ 2022 年众议院结果(0.2)+ 全国环境移动量;选区标准差 5.5,参议院和州长 6.5。TX、FL、OH、NC、MO、CA、UT、LA、TN 重划了选区,所以两项众议院结果都不用;AL、NY、GA 只不用 2022 年;没有结果表的选区只用总统选举差。GA、NH、MN、NC 按民主党守住、FL、LA 按共和党守住处理,不建模。表格列出最接近的 {nl} 个众议院选区;其余 {nr} 个按稳固席位处理(其中 {fx} 个为民主党)。基本面只反映选区倾向,不含候选人质量、筹款或丑闻。",
 src:"源代码和数据(GitHub)",
 names:{AK:"阿拉斯加",OH:"俄亥俄",TX:"德克萨斯",IA:"艾奥瓦",KS:"堪萨斯",ME:"缅因",MI:"密歇根",NE:"内布拉斯加",SC:"南卡罗来纳",NV:"内华达",WI:"威斯康星",GA:"佐治亚",FL:"佛罗里达"}}
 };
@@ -254,6 +258,8 @@ function render(){
   $("sExp").textContent=s.mean.toFixed(1);$("sCtl").textContent=pct(s.ctl);$("sRng").textContent=s.lo+"–"+s.hi;$("sBar").style.width=s.mean+"%";
   $("gExp").textContent=g.mean.toFixed(1);$("gCtl").textContent=pct(g.ctl);$("gBar").style.width=g.mean/8*100+"%";
   histSvg($("hSvg"),h,D0.fixed_dem-17,D0.fixed_dem+78);histSvg($("sSvg"),s,41,62);
+  const T=state.tab;$("cH").hidden=T!=="H";$("cS").hidden=T!=="S";$("cG").hidden=T!=="G";$("dH").hidden=T!=="H";$("dS").hidden=T!=="S";$("close").hidden=T==="G";
+  ["tH","tS","tG"].forEach(i=>$(i).setAttribute("aria-pressed",i==="t"+T));
   table();trend();
 }
 function table(){
@@ -280,12 +286,13 @@ function lines(rows,series,lo,hi,band){
 function trend(){
   const el=$("trBody");
   if(HIST.length<2){el.innerHTML=`<div class="empty">${t('trEmpty')}</div>`;return}
-  const R=HIST.map(r=>({...r,hc:r.house_ctl*100,sc:r.senate_ctl*100}));
-  const pr=(a,k)=>{const v=R.flatMap(r=>k.map(x=>r[x]));return[Math.floor(Math.min(...v)-3),Math.ceil(Math.max(...v)+3)]};
-  const [hl,hh]=pr(R,['house_lo','house_hi']),[sl,sh]=pr(R,['senate_lo','senate_hi']);
-  el.innerHTML=`<div class="chartwrap"><div class="card"><h2>${t('trH')}</h2>${lines(R,[{k:'house_mean',c:'var(--dem)'}],hl,hh,['house_lo','house_hi'])}</div>
-  <div class="card"><h2>${t('trS')}</h2>${lines(R,[{k:'senate_mean',c:'var(--dem)'}],sl,sh,['senate_lo','senate_hi'])}</div>
-  <div class="card"><h2>${t('trC')}</h2>${lines(R,[{k:'hc',c:'var(--dem)'},{k:'sc',c:'var(--gold)'}],0,100)}<div class="lg"><span style="--c:var(--dem)">${t('hLab')}</span><span style="--c:var(--gold)">${t('sLab')}</span></div></div></div>`;
+  const T=state.tab,R=HIST.map(r=>({...r,hc:r.house_ctl*100,sc:r.senate_ctl*100,gc:r.gov_maj*100}));
+  const rg=ks=>{const v=R.flatMap(r=>ks.map(x=>r[x]));return[Math.floor(Math.min(...v)-3),Math.ceil(Math.max(...v)+3)]};
+  let c1,c2;
+  if(T==="H"){const [l,h]=rg(['house_lo','house_hi']);c1=`<div class="card"><h2>${t('trH')}</h2>${lines(R,[{k:'house_mean',c:'var(--dem)'}],l,h,['house_lo','house_hi'])}</div>`;c2=`<div class="card"><h2>${t('trC')}</h2>${lines(R,[{k:'hc',c:'var(--dem)'}],0,100)}</div>`}
+  else if(T==="S"){const [l,h]=rg(['senate_lo','senate_hi']);c1=`<div class="card"><h2>${t('trS')}</h2>${lines(R,[{k:'senate_mean',c:'var(--dem)'}],l,h,['senate_lo','senate_hi'])}</div>`;c2=`<div class="card"><h2>${t('trC')}</h2>${lines(R,[{k:'sc',c:'var(--dem)'}],0,100)}</div>`}
+  else{const [l,h]=rg(['gov_mean']);c1=`<div class="card"><h2>${t('trG')}</h2>${lines(R,[{k:'gov_mean',c:'var(--dem)'}],Math.max(0,l),Math.min(8,h))}</div>`;c2=`<div class="card"><h2>${t('trC')}</h2>${lines(R,[{k:'gc',c:'var(--dem)'}],0,100)}</div>`}
+  el.innerHTML=`<div class="chartwrap">${c1}${c2}</div>`;
 }
 async function init(){
   try{lang=localStorage.getItem('lang')||((navigator.language||'').toLowerCase().startsWith('zh')?'zh':'en')}catch(e){lang=(navigator.language||'').toLowerCase().startsWith('zh')?'zh':'en'}
@@ -299,7 +306,10 @@ async function init(){
   $("rst").addEventListener("click",()=>{$("nat").value=D0.N0;$("fw").value=25;render()});
   $("lang").addEventListener("click",()=>{lang=lang==='zh'?'en':'zh';applyLang()});
   $("thead").addEventListener("click",e=>{const k=e.target.closest("th")?.dataset.k;if(!k)return;if(state.sort===k)state.dir*=-1;else{state.sort=k;state.dir=k==="name"?1:-1}table()});
-  [["tH","H"],["tS","S"],["tG","G"]].forEach(([id,tb])=>$(id).addEventListener("click",()=>{state.tab=tb;state.sort="comp";state.dir=-1;["tH","tS","tG"].forEach(i=>$(i).setAttribute("aria-pressed",i===id));table()}));
+  const HM={house:"H",senate:"S",governors:"G"},HR={H:"house",S:"senate",G:"governors"};
+  const setTab=tb=>{state.tab=tb;state.sort="comp";state.dir=-1;try{history.replaceState(null,"","#"+HR[tb])}catch(e){}render()};
+  [["tH","H"],["tS","S"],["tG","G"]].forEach(([id,tb])=>$(id).addEventListener("click",()=>setTab(tb)));
+  if(HM[location.hash.slice(1)])state.tab=HM[location.hash.slice(1)];
   $("close").addEventListener("click",()=>{state.close=!state.close;$("close").setAttribute("aria-pressed",state.close);table()});
   applyLang();
 }
