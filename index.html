@@ -225,7 +225,7 @@ fwL:"Fundamentals weight",fwH:"Other signals scale proportionally: FPO 35 · Pol
 rst:"Reset sliders",hintT:"How the sliders work",methT:"Method",hT:"House · 218 needed",sT:"Senate · 51 needed",gT:"Governors · 36 races",
 expS:"expected Dem seats",expG:"expected Dem governors (of 50)",ctl:"Control",rng:"80% range",maj:"Majority (≥26 of 50)",
 hD:"House: Democratic seat distribution",sD:"Senate: Democratic seat distribution",
-trT:"Trend across model runs",tblT:"Show data table",vwT:"Switch to tile map",vwG:"Switch to district map",ampSrc:"District boundaries (post-redistricting) © amCharts geodata, linkware license",mapNHg:"Real district boundaries (latest maps after mid-decade redistricting). The 66 closest districts react to the sliders; the other {nr} are fixed. Small urban districts are hard to see here: switch to the tile map.",mapNH:"Each square is one district, grouped by state. The 66 closest districts react to the sliders; the other {nr} are fixed in the simulation (colored by their composite).",mapNS:"Colors follow our own rating and update with the sliders. Hover or tap a state for details.",mapNG:"All 36 governor races are modeled. Hover or tap a state for details.",
+trT:"Trend across model runs",tblT:"Show data table",rWin:"R win %",vwT:"Switch to tile map",vwG:"Switch to district map",ampSrc:"District boundaries (post-redistricting) © amCharts geodata, linkware license",mapNHg:"Real district boundaries (latest maps after mid-decade redistricting). The 66 closest districts react to the sliders; the other {nr} are fixed. Small urban districts are hard to see here: switch to the tile map.",mapNH:"Each square is one district, grouped by state. The 66 closest districts react to the sliders; the other {nr} are fixed in the simulation (colored by their composite).",mapNS:"Colors follow our own rating and update with the sliders. Hover or tap a state for details.",mapNG:"All 36 governor races are modeled. Hover or tap a state for details.",
 lgNot:"Not up for reelection",lgAssD:"Solid D, assumed (not modeled)",lgAssR:"Solid R, assumed (not modeled)",lgUp:"Up in 2026, not tracked",lgNoG:"No race in 2026",
 tipSafe:"Not among the 66 closest districts; held fixed in the simulation.",tipAssD:"Up in 2026 but not modeled; treated as a Democratic hold.",tipAssR:"Up in 2026 but not modeled; treated as a Republican hold.",tipNoS:"No Senate race in 2026 (not up for reelection).",tipUpG:"Governor race in 2026, not tracked by this model.",tipNoG:"No governor race in 2026.",
 trEmpty:"The trend appears after the second model run (runs happen every Tuesday and Saturday).",
@@ -236,7 +236,7 @@ district:"District",state:"State",fund:"Fund.",comp:"Composite",rate:"Our rating
 rtNote:"Our rating is set from the composite Democratic win probability: Solid ≥95% · Likely 80–95% · Lean 65–80% · Tilt 55–65% · Toss-up 45–55% (mirrored for Republicans). It is separate from Cook's rating.",
 "Solid D":"Solid D","Likely D":"Likely D","Lean D":"Lean D","Tilt D":"Tilt D","Toss-up":"Toss-up","Tilt R":"Tilt R","Lean R":"Lean R","Likely R":"Likely R","Solid R":"Solid R",
 ckT:"Toss Up",ckl:"Lean D",ckL:"Lean R",ckk:"Likely D",ckK:"Likely R",ckS:"Solid",
-method:"Each seat's composite is a weighted average of available signals (missing ones dropped, weights renormalized). Seat totals come from a Gaussian-copula simulation (Senate correlation 0.38; the House is 0.31 across all 435 districts, but this page simulates only the {nl} closest districts, so it uses 0.5 to reproduce the full model's control probability) calibrated so FPO-only seat spread matches FPO's published range. Fundamentals = 2024 presidential margin (0.5) + 2024 House result (0.3) + 2022 House result (0.2) + national shift; district SD 5.5, Senate and governor SD 6.5. TX, FL, OH, NC, MO, CA, UT, LA and TN were redrawn, so both House-result terms are dropped; AL, NY and GA drop 2022 only; districts without a results table use the presidential margin only. All 35 Senate races and all 36 governor races are modeled (Democrats hold 34 Senate seats and 6 governorships that are not up; Senate majority = 51, governors = 26 of 50). States with a Cook Solid rating get a 97/3 signal. The table lists the {nl} closest House districts; the other {nr} are treated as safe ({fx} Democratic). Fundamentals reflect district lean only, not candidate quality, fundraising or scandals.",
+method:"Each seat's composite is a weighted average of available signals (missing ones dropped, weights renormalized). Seat totals come from a Gaussian-copula simulation (Senate correlation 0.38; the House is 0.31 across all 435 districts, but this page simulates only the {nl} closest districts, so it uses 0.5 to reproduce the full model's control probability) calibrated so FPO-only seat spread matches FPO's published range. Fundamentals = 2024 presidential margin (0.5) + 2024 House result (0.3) + 2022 House result (0.2) + national shift; district SD 5.5, Senate and governor SD 6.5. TX, FL, OH, NC, MO, CA, UT, LA and TN were redrawn, so both House-result terms are dropped; AL, NY and GA drop 2022 only; districts without a results table use the presidential margin only. All 35 Senate races and all 36 governor races are modeled (Democrats hold 34 Senate seats and 6 governorships that are not up; Senate majority = 51, governors = 26 of 50). States with a Cook Solid rating get a 97/3 signal. Vermont and New Hampshire governor fundamentals blend the presidential margin with the 2024 gubernatorial margin (Yankee-Republican incumbents Scott and Ayotte). The table lists the {nl} closest House districts; the other {nr} are treated as safe ({fx} Democratic). Fundamentals reflect district lean only, not candidate quality, fundraising or scandals.",
 src:"Source code and data on GitHub",
 names:{AK:"Alaska",OH:"Ohio",TX:"Texas",IA:"Iowa",KS:"Kansas",ME:"Maine",MI:"Michigan",NE:"Nebraska",SC:"South Carolina",NV:"Nevada",WI:"Wisconsin",GA:"Georgia",FL:"Florida"}},
 zh:{title:"2026 年中期选举席位模型",
@@ -247,7 +247,7 @@ fwL:"基本面权重",fwH:"其他信号按比例缩放:FPO 35 · Polymarket 25 �
 rst:"重置滑块",hintT:"滑块说明",methT:"方法",hT:"众议院 · 需 218 席",sT:"参议院 · 需 51 席",gT:"州长 · 36 场选举",
 expS:"民主党预期席位",expG:"民主党州长预期数(共 50)",ctl:"控制概率",rng:"80% 区间",maj:"过半(≥26/50)",
 hD:"众议院:民主党席位分布",sD:"参议院:民主党席位分布",
-trT:"各次模型运行的走势",tblT:"显示数据表",vwT:"切换为方块图",vwG:"切换为选区边界图",ampSrc:"选区边界(重划后)© amCharts geodata,linkware 许可",mapNHg:"真实选区边界(中期重划后的最新地图)。最接近的 66 个选区随滑块变化,其余 {nr} 个固定。城市里的小选区在这里很难看清,可切换为方块图。",mapNH:"每个方块代表一个选区,按州分组。最接近的 66 个选区会随滑块变化;其余 {nr} 个在模拟中固定(按各自综合概率着色)。",mapNS:"颜色按本模型评级,随滑块更新。悬停或点按州查看详情。",mapNG:"36 个州长选举全部建模。悬停或点按州查看详情。",
+trT:"各次模型运行的走势",tblT:"显示数据表",rWin:"共和党胜率 %",vwT:"切换为方块图",vwG:"切换为选区边界图",ampSrc:"选区边界(重划后)© amCharts geodata,linkware 许可",mapNHg:"真实选区边界(中期重划后的最新地图)。最接近的 66 个选区随滑块变化,其余 {nr} 个固定。城市里的小选区在这里很难看清,可切换为方块图。",mapNH:"每个方块代表一个选区,按州分组。最接近的 66 个选区会随滑块变化;其余 {nr} 个在模拟中固定(按各自综合概率着色)。",mapNS:"颜色按本模型评级,随滑块更新。悬停或点按州查看详情。",mapNG:"36 个州长选举全部建模。悬停或点按州查看详情。",
 lgNot:"今年无参议院改选",lgAssD:"稳 D,假定(未建模)",lgAssR:"稳 R,假定(未建模)",lgUp:"2026 年有选举,未追踪",lgNoG:"2026 年无选举",
 tipSafe:"不在最接近的 66 个选区之内,模拟中固定。",tipAssD:"2026 年有选举,但未建模,按民主党守住处理。",tipAssR:"2026 年有选举,但未建模,按共和党守住处理。",tipNoS:"2026 年无参议院选举(不改选)。",tipUpG:"2026 年有州长选举,本模型未追踪。",tipNoG:"2026 年无州长选举。",
 trEmpty:"第二次模型运行之后会显示走势(每周二、周六各运行一次)。",
@@ -258,7 +258,7 @@ district:"选区",state:"州",fund:"基本面",comp:"综合",rate:"本模型评�
 rtNote:"本模型评级按民主党获胜的综合概率划分:稳(Solid)≥95% · 很可能(Likely)80–95% · 倾向(Lean)65–80% · 微倾(Tilt)55–65% · 五五开(Toss-up)45–55%,共和党一侧对称。它独立于 Cook 的评级。",
 "Solid D":"稳 D","Likely D":"很可能 D","Lean D":"倾向 D","Tilt D":"微倾 D","Toss-up":"五五开","Tilt R":"微倾 R","Lean R":"倾向 R","Likely R":"很可能 R","Solid R":"稳 R",
 ckT:"五五开",ckl:"倾向 D",ckL:"倾向 R",ckk:"很可能 D",ckK:"很可能 R",ckS:"稳",
-method:"每个席位的综合概率是各可用信号的加权平均(缺失的信号去掉,权重重新归一)。席位总数来自高斯 copula 模拟(参议院相关系数 0.38;众议院在全部 435 个选区上是 0.31,但本页只模拟最接近的 {nl} 个选区,所以取 0.5,使控制概率与完整模型一致),校准到与 FPO 公布的席位波动范围一致。基本面 = 2024 年总统选举差(0.5)+ 2024 年众议院结果(0.3)+ 2022 年众议院结果(0.2)+ 全国环境移动量;选区标准差 5.5,参议院和州长 6.5。TX、FL、OH、NC、MO、CA、UT、LA、TN 重划了选区,所以两项众议院结果都不用;AL、NY、GA 只不用 2022 年;没有结果表的选区只用总统选举差。参议院 35 场、州长 36 场选举全部建模(今年不改选的民主党席位:参议院 34、州长 6;参议院过半 = 51,州长过半 = 26/50)。Cook 评为 Solid 的按 97/3 计入。表格列出最接近的 {nl} 个众议院选区;其余 {nr} 个按稳固席位处理(其中 {fx} 个为民主党)。基本面只反映选区倾向,不含候选人质量、筹款或丑闻。",
+method:"每个席位的综合概率是各可用信号的加权平均(缺失的信号去掉,权重重新归一)。席位总数来自高斯 copula 模拟(参议院相关系数 0.38;众议院在全部 435 个选区上是 0.31,但本页只模拟最接近的 {nl} 个选区,所以取 0.5,使控制概率与完整模型一致),校准到与 FPO 公布的席位波动范围一致。基本面 = 2024 年总统选举差(0.5)+ 2024 年众议院结果(0.3)+ 2022 年众议院结果(0.2)+ 全国环境移动量;选区标准差 5.5,参议院和州长 6.5。TX、FL、OH、NC、MO、CA、UT、LA、TN 重划了选区,所以两项众议院结果都不用;AL、NY、GA 只不用 2022 年;没有结果表的选区只用总统选举差。参议院 35 场、州长 36 场选举全部建模(今年不改选的民主党席位:参议院 34、州长 6;参议院过半 = 51,州长过半 = 26/50)。Cook 评为 Solid 的按 97/3 计入。佛蒙特和新罕布什尔的州长基本面把总统选举差与 2024 年州长选举差混合(新英格兰共和党在位者 Scott 和 Ayotte)。表格列出最接近的 {nl} 个众议院选区;其余 {nr} 个按稳固席位处理(其中 {fx} 个为民主党)。基本面只反映选区倾向,不含候选人质量、筹款或丑闻。",
 src:"源代码和数据(GitHub)",
 names:{AK:"阿拉斯加",OH:"俄亥俄",TX:"德克萨斯",IA:"艾奥瓦",KS:"堪萨斯",ME:"缅因",MI:"密歇根",NE:"内布拉斯加",SC:"南卡罗来纳",NV:"内华达",WI:"威斯康星",GA:"佐治亚",FL:"佛罗里达"}}
 };
@@ -285,8 +285,9 @@ const GOV_UP=new Set("AL AK AZ AR CA CO CT FL GA HI ID IA KS ME MD MA MI MN NE N
 const rc=p=>{const n=ratingOf(p)[0];if(n==='Toss-up')return'cT';return'c'+n.slice(-1)+{Solid:4,Likely:3,Lean:2,Tilt:1}[n.split(' ')[0]]};
 const ckl2=c=>c==='S'?t('Solid D'):c==='s'?t('Solid R'):c?t('ck'+c):t('ckS');
 const pc=v=>v==null?'–':Math.round(v*100);
-function sig(x){return `FPO ${pc(x.fA)} · PM ${pc(x.pA)} · Cook ${ckl2(x.ck)} · ${t('fund')} ${pc(x.fund)}`}
-function tipHead(name,p){const [n,c]=ratingOf(p);return `<b>${name}</b> <span class="rt ${c}">${t(n)}</span><br>${t('comp')}: ${pc(p)}% D`}
+const side=(v,r)=>v==null?'–':Math.round((r?1-v:v)*100);
+function sig(x){const r=x.comp<.5;return `${r?t('rWin')+': ':''}FPO ${side(x.fA,r)} · PM ${side(x.pA,r)} · Cook ${ckl2(x.ck)} · ${t('fund')} ${side(x.fund,r)}`}
+function tipHead(name,p){const [n,c]=ratingOf(p);return `<b>${name}</b> <span class="rt ${c}">${t(n)}</span><br>${t('comp')}: ${p<.5?pc(1-p)+'% R':pc(p)+'% D'}`}
 function tipFor(k){const [ty,id]=k.split(":");
   if(ty==="H"){const h=H.find(x=>x.id===id);if(h)return tipHead(id,h.comp)+"<br>"+sig(h);const a=AL.find(x=>x.id===id);return tipHead(id,a.c)+`<br><span class="mu">${t('tipSafe')}</span>`}
   const x=(ty==="S"?S:G).find(y=>y.id===id),nm=sname(id);
@@ -368,7 +369,7 @@ function trend(){
   el.innerHTML=`<div class="chartwrap">${c1}${c2}</div>`;
 }
 async function init(){
-  try{lang=localStorage.getItem('lang')||((navigator.language||'').toLowerCase().startsWith('zh')?'zh':'en')}catch(e){lang=(navigator.language||'').toLowerCase().startsWith('zh')?'zh':'en'}
+  try{lang=localStorage.getItem('lang')||'en'}catch(e){lang='en'}
   try{D0=await (await fetch('data.json',{cache:'no-store'})).json()}catch(e){document.body.insertAdjacentHTML('afterbegin','<p style="padding:20px">data.json could not be loaded. Open this page through a web server.</p>');return}
   try{HIST=await (await fetch('history.json',{cache:'no-store'})).json()}catch(e){HIST=[]}
   H=D0.H.split(";").map(r=>{const a=r.split(",");return{id:a[0],f:+a[1],pm:+a[2]<0?null:+a[2],ck:a[3],base:Math.max(-30,Math.min(30,+a[4])),terms:+a[5]}});
