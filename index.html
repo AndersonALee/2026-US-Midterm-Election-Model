@@ -89,6 +89,7 @@ a{color:var(--dem)}
 .cR4{--f:var(--rep)}.cR3{--f:color-mix(in srgb,var(--rep) 70%,var(--bg))}.cR2{--f:color-mix(in srgb,var(--rep) 46%,var(--bg))}.cR1{--f:color-mix(in srgb,var(--rep) 26%,var(--bg))}
 .cT{--f:var(--gold)}.cN{--f:var(--line)}.cU{--f:color-mix(in srgb,var(--mute) 30%,var(--bg))}
 .cAD{--f:color-mix(in srgb,var(--dem) 30%,var(--line))}.cAR{--f:color-mix(in srgb,var(--rep) 30%,var(--line))}
+.m.cAD{fill:url(#pD)}.m.cAR{fill:url(#pR)}.m.cU{fill:url(#pU)}.sw.cAD{background:repeating-linear-gradient(45deg,var(--dem) 0 3px,var(--line) 3px 6px)}.sw.cAR{background:repeating-linear-gradient(45deg,var(--rep) 0 3px,var(--line) 3px 6px)}.sw.cU{background:repeating-linear-gradient(45deg,var(--mute) 0 2px,var(--bg) 2px 6px);outline:1px solid var(--line)}
 .sw{display:inline-block;width:12px;height:12px;background:var(--f);border-radius:2px;margin-right:5px;vertical-align:-2px}
 #mapLg{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:.74rem;color:var(--mute);margin-top:8px}
 .sl{font-size:9px;fill:var(--mute);pointer-events:none}.sl2{font-size:11px;fill:var(--ink);paint-order:stroke;stroke:var(--bg);stroke-width:2.5px;pointer-events:none;text-anchor:middle}
@@ -117,13 +118,13 @@ summary{cursor:pointer;color:var(--mute);font-size:.8rem}details.note summary{fo
   </section>
 
   <nav class="tabs" role="group" aria-label="Chamber">
-    <button id="tH" aria-pressed="true" data-i="tabH"></button>
     <button id="tS" aria-pressed="false" data-i="tabS"></button>
+    <button id="tH" aria-pressed="true" data-i="tabH"></button>
     <button id="tG" aria-pressed="false" data-i="tabG"></button>
   </nav>
 
   <section class="panel" id="mapP">
-    <button class="chip" id="vw" type="button" style="margin-bottom:8px"></button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"><button class="chip" id="vw" type="button"></button><select class="chip" id="zm" aria-label="zoom"></select></div>
     <div class="mapw"><svg id="mapSvg" role="img"></svg></div>
     <div id="mapLg"></div>
     <p class="note" id="mapNote" style="margin-top:8px"></p>
@@ -175,7 +176,7 @@ summary{cursor:pointer;color:var(--mute);font-size:.8rem}details.note summary{fo
 </div>
 
 <script>
-let CD=null,view='geo';let H=[],S=[],G=[],D0={},HIST=[],lang='en',MP=null,AL=[];
+let CD=null,view='geo',zoomK='us';const ZM={nyc:[870,215,68],la:[89,365,68],chi:[636,228,68],bay:[39,267,56],dc:[825,263,72],phl:[852,237,56],bos:[907,169,52],hou:[510,508,68],dal:[479,440,68],atl:[715,404,68],mia:[817,564,60],det:[710,206,60],sea:[99,49,60],phx:[199,399,60],den:[344,275,56],twin:[541,161,56]};const ZN={en:{us:'Zoom: whole US',nyc:'New York',la:'Los Angeles',chi:'Chicago',bay:'SF Bay Area',dc:'DC / Baltimore',phl:'Philadelphia',bos:'Boston',hou:'Houston',dal:'Dallas–Fort Worth',atl:'Atlanta',mia:'Miami',det:'Detroit',sea:'Seattle',phx:'Phoenix',den:'Denver',twin:'Twin Cities'},zh:{us:'缩放:全国',nyc:'纽约',la:'洛杉矶',chi:'芝加哥',bay:'旧金山湾区',dc:'华盛顿/巴尔的摩',phl:'费城',bos:'波士顿',hou:'休斯敦',dal:'达拉斯-沃思堡',atl:'亚特兰大',mia:'迈阿密',det:'底特律',sea:'西雅图',phx:'凤凰城',den:'丹佛',twin:'双城(明尼阿波利斯)'}};let H=[],S=[],G=[],D0={},HIST=[],lang='en',MP=null,AL=[];
 const CK={T:.5,l:.7,L:.3,k:.88,K:.12};
 function Phi(x){const t=1/(1+.2316419*Math.abs(x)),d=.3989423*Math.exp(-x*x/2);const p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p}
 function probit(p){p=Math.min(Math.max(p,1e-6),1-1e-6);let lo=-8,hi=8;for(let i=0;i<40;i++){const m=(lo+hi)/2;Phi(m)<p?lo=m:hi=m}return lo}
@@ -225,7 +226,7 @@ rst:"Reset sliders",hintT:"How the sliders work",methT:"Method",hT:"House · 218
 expS:"expected Dem seats",expG:"expected Dem wins",ctl:"Control",rng:"80% range",maj:"Majority (≥5)",
 hD:"House: Democratic seat distribution",sD:"Senate: Democratic seat distribution",
 trT:"Trend across model runs",tblT:"Show data table",vwT:"Switch to tile map",vwG:"Switch to district map",ampSrc:"District boundaries (post-redistricting) © amCharts geodata, linkware license",mapNHg:"Real district boundaries (latest maps after mid-decade redistricting). The 66 closest districts react to the sliders; the other {nr} are fixed. Small urban districts are hard to see here: switch to the tile map.",mapNH:"Each square is one district, grouped by state. The 66 closest districts react to the sliders; the other {nr} are fixed in the simulation (colored by their composite).",mapNS:"Colors follow our own rating and update with the sliders. Hover or tap a state for details.",mapNG:"Eight governor races are tracked. Hover or tap a state for details.",
-lgNot:"Not up for reelection",lgAss:"Solid (assumed, not modeled)",lgUp:"Up in 2026, not tracked",lgNoG:"No race in 2026",
+lgNot:"Not up for reelection",lgAssD:"Solid D, assumed (not modeled)",lgAssR:"Solid R, assumed (not modeled)",lgUp:"Up in 2026, not tracked",lgNoG:"No race in 2026",
 tipSafe:"Not among the 66 closest districts; held fixed in the simulation.",tipAssD:"Up in 2026 but not modeled; treated as a Democratic hold.",tipAssR:"Up in 2026 but not modeled; treated as a Republican hold.",tipNoS:"No Senate race in 2026 (not up for reelection).",tipUpG:"Governor race in 2026, not tracked by this model.",tipNoG:"No governor race in 2026.",
 trEmpty:"The trend appears after the second model run (runs happen every Tuesday and Saturday).",
 trH:"House expected seats (band = 80% range)",trS:"Senate expected seats (band = 80% range)",trC:"Control probability (%)",trG:"Governors: expected Dem wins of 8",hLab:"House",sLab:"Senate",
@@ -247,7 +248,7 @@ rst:"重置滑块",hintT:"滑块说明",methT:"方法",hT:"众议院 · 需 218 
 expS:"民主党预期席位",expG:"民主党预期获胜数",ctl:"控制概率",rng:"80% 区间",maj:"过半(≥5)",
 hD:"众议院:民主党席位分布",sD:"参议院:民主党席位分布",
 trT:"各次模型运行的走势",tblT:"显示数据表",vwT:"切换为方块图",vwG:"切换为选区边界图",ampSrc:"选区边界(重划后)© amCharts geodata,linkware 许可",mapNHg:"真实选区边界(中期重划后的最新地图)。最接近的 66 个选区随滑块变化,其余 {nr} 个固定。城市里的小选区在这里很难看清,可切换为方块图。",mapNH:"每个方块代表一个选区,按州分组。最接近的 66 个选区会随滑块变化;其余 {nr} 个在模拟中固定(按各自综合概率着色)。",mapNS:"颜色按本模型评级,随滑块更新。悬停或点按州查看详情。",mapNG:"追踪 8 个州长选举。悬停或点按州查看详情。",
-lgNot:"今年无参议院改选",lgAss:"稳(假定,未建模)",lgUp:"2026 年有选举,未追踪",lgNoG:"2026 年无选举",
+lgNot:"今年无参议院改选",lgAssD:"稳 D,假定(未建模)",lgAssR:"稳 R,假定(未建模)",lgUp:"2026 年有选举,未追踪",lgNoG:"2026 年无选举",
 tipSafe:"不在最接近的 66 个选区之内,模拟中固定。",tipAssD:"2026 年有选举,但未建模,按民主党守住处理。",tipAssR:"2026 年有选举,但未建模,按共和党守住处理。",tipNoS:"2026 年无参议院选举(不改选)。",tipUpG:"2026 年有州长选举,本模型未追踪。",tipNoG:"2026 年无州长选举。",
 trEmpty:"第二次模型运行之后会显示走势(每周二、周六各运行一次)。",
 trH:"众议院预期席位(阴影 = 80% 区间)",trS:"参议院预期席位(阴影 = 80% 区间)",trC:"控制概率(%)",trG:"州长:民主党预期获胜数(共 8 州)",hLab:"众议院",sLab:"参议院",
@@ -297,11 +298,11 @@ function mapRender(){
   const sw=(c,l)=>`<span><i class="sw ${c}"></i>${l}</span>`;
   const rt=['Solid D','Likely D','Lean D','Tilt D','Toss-up','Tilt R','Lean R','Likely R','Solid R'],rcl=['cD4','cD3','cD2','cD1','cT','cR1','cR2','cR3','cR4'];
   rt.forEach((n,i)=>lg.push(sw(rcl[i],t(n))));
-  $("vw").hidden=T!=="H"||!CD;$("vw").textContent=t(view==='geo'?'vwT':'vwG');
+  $("vw").hidden=T!=="H"||!CD;$("zm").hidden=T!=="H"||view!=="geo"||!CD;{const zs=$("zm");zs.innerHTML=Object.keys(ZN.en).map(k=>`<option value="${k}"${k===zoomK?" selected":""}>${ZN[lang][k]}</option>`).join("")}$("vw").textContent=t(view==='geo'?'vwT':'vwG');
   if(T==="H"&&view==='geo'&&CD){
-    svg.setAttribute("viewBox","0 0 975 610");const hm={};H.forEach(x=>hm[x.id]=x);
-    AL.forEach(d=>{const p=d.h?d.h.comp:d.c,id=d.id,k=CD[id]||CD[id.replace('-01','-00')];if(k)h+=`<path class="m ${rc(p)}" d="${k}" data-k="H:${id}" style="stroke-width:.5"/>`});
-    Object.keys(MP.p).forEach(st=>{h+=`<path d="${MP.p[st]}" fill="none" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1" pointer-events="none"/>`});
+    const z=ZM[zoomK];svg.setAttribute("viewBox",z?`${z[0]-z[2]/2} ${z[1]-z[2]*.313} ${z[2]} ${z[2]*.626}`:"0 0 975 610");const hm={};H.forEach(x=>hm[x.id]=x);
+    AL.forEach(d=>{const p=d.h?d.h.comp:d.c,id=d.id,k=CD[id]||CD[id.replace('-01','-00')];if(k)h+=`<path class="m ${rc(p)}" d="${k}" data-k="H:${id}" style="stroke-width:.6;vector-effect:non-scaling-stroke"/>`});
+    Object.keys(MP.p).forEach(st=>{h+=`<path d="${MP.p[st]}" fill="none" stroke="var(--ink)" stroke-opacity=".55" stroke-width="1.2" vector-effect="non-scaling-stroke" pointer-events="none"/>`});
   }else if(T==="H"){
     svg.setAttribute("viewBox","0 0 792 576");const P=8,by={};
     AL.forEach(d=>{(by[d.st]=by[d.st]||[]).push(d)});
@@ -315,9 +316,9 @@ function mapRender(){
       if(x)c=rc(x.comp);else if(T==="S")c=SEN_D.has(st)?'cAD':SEN_R.has(st)?'cAR':'cN';else c=GOV_UP.has(st)?'cU':'cN';
       h+=`<path class="m ${c}" d="${MP.p[st]}" data-k="${T}:${st}"/>`});
     Object.keys(MP.l).forEach(st=>{const l=MP.l[st];if(st!=="DC"&&l[2]>30)h+=`<text class="sl2" x="${l[0]}" y="${l[1]+4}">${st}</text>`});
-    if(T==="S"){lg.push(sw('cAD',t('lgAss')).replace('</span>','</span>'),sw('cAR','').replace('<span>','<span style="margin-left:-10px">'),sw('cN',t('lgNot')))}else{lg.push(sw('cU',t('lgUp')),sw('cN',t('lgNoG')))}
+    if(T==="S"){lg.push(sw('cAD',t('lgAssD')),sw('cAR',t('lgAssR')),sw('cN',t('lgNot')))}else{lg.push(sw('cU',t('lgUp')),sw('cN',t('lgNoG')))}
   }
-  svg.innerHTML=h;$("mapLg").innerHTML=lg.join("");
+  svg.innerHTML=`<defs><pattern id="pD" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" style="fill:var(--line)"/><rect width="3.5" height="7" style="fill:var(--dem)"/></pattern><pattern id="pR" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" style="fill:var(--line)"/><rect width="3.5" height="7" style="fill:var(--rep)"/></pattern><pattern id="pU" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" style="fill:var(--bg)"/><rect width="2" height="7" style="fill:var(--mute)"/></pattern></defs>`+h;$("mapLg").innerHTML=lg.join("");
   $("mapNote").innerHTML=fill(t(T==="H"?(view==='geo'&&CD?'mapNHg':'mapNH'):T==="S"?'mapNS':'mapNG'));
 }
 function render(){
@@ -386,6 +387,7 @@ async function init(){
   [["tH","H"],["tS","S"],["tG","G"]].forEach(([id,tb])=>$(id).addEventListener("click",()=>setTab(tb)));
   if(HM[location.hash.slice(1)])state.tab=HM[location.hash.slice(1)];
   $("close").addEventListener("click",()=>{state.close=!state.close;$("close").setAttribute("aria-pressed",state.close);table()});
+  $("zm").addEventListener("change",e=>{zoomK=e.target.value;mapRender()});
   $("vw").addEventListener("click",()=>{view=view==='geo'?'tile':'geo';render()});
   const tip=$("tip"),svgm=$("mapSvg");
   const show=e=>{const el=e.target.closest("[data-k]");if(!el){tip.hidden=true;return}tip.innerHTML=tipFor(el.dataset.k);tip.hidden=false;const w=tip.offsetWidth,hh=tip.offsetHeight;let x=e.clientX+14,y=e.clientY+14;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+hh>innerHeight-8)y=e.clientY-hh-14;tip.style.left=Math.max(4,x)+"px";tip.style.top=Math.max(4,y)+"px"};
