@@ -399,7 +399,8 @@ async function init(){
   const setF=v=>{state.close=v;$("fC").setAttribute("aria-pressed",v);$("fA").setAttribute("aria-pressed",!v);table()};
   $("fC").addEventListener("click",()=>setF(true));$("fA").addEventListener("click",()=>setF(false));
   const sq=$("sq"),sr=$("sr"),norm=x=>x.toLowerCase().replace(/[\s\-\.]/g,"");
-  const goTo=(st,id)=>{if(CD)view='geo';zoomK=st;zoomD=id||null;sr.hidden=true;sq.value="";mapRender();$("mapSvg").scrollIntoView({block:"center"});if(id)requestAnimationFrame(()=>{const el=document.querySelector(`[data-k="H:${id}"]`),tp=$("tip");if(!el)return;const r=el.getBoundingClientRect();tp.innerHTML=tipFor("H:"+id);tp.hidden=false;const w=tp.offsetWidth,hh=tp.offsetHeight;let x=r.left+r.width/2+16,y=r.top+r.height/2-hh/2;if(x+w>innerWidth-8)x=r.left+r.width/2-w-16;x=Math.max(4,x);y=Math.max(4,Math.min(y,innerHeight-hh-8));tp.style.left=x+"px";tp.style.top=y+"px"})};
+  let lastM={x:-99,y:-99},pin=null;document.addEventListener("mousemove",e=>{lastM={x:e.clientX,y:e.clientY}},true);
+  const goTo=(st,id)=>{pin=id?{...lastM}:null;if(CD)view='geo';zoomK=st;zoomD=id||null;sr.hidden=true;sq.value="";mapRender();$("mapSvg").scrollIntoView({block:"center"});if(id)requestAnimationFrame(()=>{const el=document.querySelector(`[data-k="H:${id}"]`),tp=$("tip");if(!el)return;const r=el.getBoundingClientRect();tp.innerHTML=tipFor("H:"+id);tp.hidden=false;const w=tp.offsetWidth,hh=tp.offsetHeight;let x=r.left+r.width/2+16,y=r.top+r.height/2-hh/2;if(x+w>innerWidth-8)x=r.left+r.width/2-w-16;x=Math.max(4,x);y=Math.max(4,Math.min(y,innerHeight-hh-8));tp.style.left=x+"px";tp.style.top=y+"px"})};
   const doSearch=()=>{const q=norm(sq.value);if(!q){sr.hidden=true;return}const out=[],seen=new Set();
     const sts=Object.keys(MP.p).filter(st=>st!=="DC");
     sts.forEach(st=>{const nm=[st,sname(st),NMS.en.split(",").find(x=>x.startsWith(st+" "))?.slice(3)||""].map(norm);if(nm.some(n=>n===q||(q.length>1&&n.startsWith(q))))out.push({l:sname(st),r:t('sSt'),f:()=>goTo(st)})});
@@ -412,8 +413,8 @@ async function init(){
   $("mapSvg").addEventListener("click",e=>{if(state.tab!=="H"||view!=="geo")return;const el=e.target.closest("[data-k]");if(!el)return;const id=el.dataset.k.split(":")[1],st=id.slice(0,2);if(!MP.p[st])return;if(st!==zoomK){zoomK=st;zoomD=null;mapRender()}else if(zoomD!==id){zoomD=id;mapRender()}});
   $("vw").addEventListener("click",()=>{view=view==='geo'?'tile':'geo';render()});
   const tip=$("tip"),svgm=$("mapSvg");
-  const show=e=>{const el=e.target.closest("[data-k]");if(!el){tip.hidden=true;return}tip.innerHTML=tipFor(el.dataset.k);tip.hidden=false;const w=tip.offsetWidth,hh=tip.offsetHeight;let x=e.clientX+14,y=e.clientY+14;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+hh>innerHeight-8)y=e.clientY-hh-14;tip.style.left=Math.max(4,x)+"px";tip.style.top=Math.max(4,y)+"px"};
-  svgm.addEventListener("mousemove",show);svgm.addEventListener("click",show);svgm.addEventListener("mouseleave",()=>{tip.hidden=true});
+  const show=e=>{if(pin){if(Math.hypot(e.clientX-pin.x,e.clientY-pin.y)<10)return;pin=null}const el=e.target.closest("[data-k]");if(!el){tip.hidden=true;return}tip.innerHTML=tipFor(el.dataset.k);tip.hidden=false;const w=tip.offsetWidth,hh=tip.offsetHeight;let x=e.clientX+14,y=e.clientY+14;if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+hh>innerHeight-8)y=e.clientY-hh-14;tip.style.left=Math.max(4,x)+"px";tip.style.top=Math.max(4,y)+"px"};
+  svgm.addEventListener("mousemove",show);svgm.addEventListener("click",show);svgm.addEventListener("mouseleave",()=>{if(!pin)tip.hidden=true});
   document.addEventListener("click",e=>{if(!e.target.closest("#mapSvg"))tip.hidden=true});
   applyLang();
 }
