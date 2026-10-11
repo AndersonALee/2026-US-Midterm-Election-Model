@@ -1,0 +1,233 @@
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>2026 Midterm Seat Model</title>
+<style>
+/* Layout: results-board — control bar on top, three big readouts, two seat histograms, then a sortable seat ledger. */
+:root{
+  --bg:#f3f4f7; --panel:#ffffff; --ink:#14181f; --mute:#5b6473; --line:#d9dde5;
+  --dem:#1f5fbf; --dem-soft:#dbe7fa; --rep:#c23b32; --rep-soft:#f6dcd9; --gold:#b7791f; --tick:#14181f;
+  --f-fpo:#1f5fbf; --f-pm:#7a3fb0; --f-cook:#1d8a6a; --f-fund:#c9791a;
+  --sans:"IBM Plex Sans","Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1218; --panel:#171b24; --ink:#eceff5; --mute:#9aa3b2; --line:#2a303d;
+  --dem:#6aa3ff; --dem-soft:#1c2c4a; --rep:#ff7a6e; --rep-soft:#4a2320; --gold:#e3a94a; --tick:#eceff5;
+  --f-fpo:#6aa3ff; --f-pm:#b98aea; --f-cook:#4fd1a5; --f-fund:#f0a64a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1218; --panel:#171b24; --ink:#eceff5; --mute:#9aa3b2; --line:#2a303d;
+  --dem:#6aa3ff; --dem-soft:#1c2c4a; --rep:#ff7a6e; --rep-soft:#4a2320; --gold:#e3a94a; --tick:#eceff5;
+  --f-fpo:#6aa3ff; --f-pm:#b98aea; --f-cook:#4fd1a5; --f-fund:#f0a64a; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;padding-inline:16px;padding-block:20px 40px}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1{font-size:1.5rem;margin:0;text-wrap:balance;letter-spacing:.01em}
+.sub{color:var(--mute);margin:2px 0 0;font-size:.85rem}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px}
+.ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px 28px}
+.ctl label{display:flex;justify-content:space-between;font-size:.82rem;color:var(--mute);margin-bottom:6px}
+.ctl output{font-family:var(--mono);color:var(--ink);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--dem)}
+#rst{justify-self:start;align-self:end;font:inherit;font-size:13px;padding:6px 14px;border-radius:8px;border:1px solid var(--line,currentColor);background:transparent;color:inherit;cursor:pointer}
+#rst:hover{background:rgba(127,127,127,.15)}
+.hint{font-size:.75rem;color:var(--mute);margin-top:4px}
+.read{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+.card h2{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 8px;font-weight:600}
+.big{font-family:var(--mono);font-size:2.4rem;font-weight:600;line-height:1;color:var(--dem)}
+.big small{font-size:.9rem;color:var(--mute);font-weight:400;margin-left:6px}
+.row{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;margin-top:8px;font-size:.85rem;color:var(--mute)}
+.row b{font-family:var(--mono);color:var(--ink)}
+.bar{height:10px;border-radius:2px;background:var(--rep-soft);overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;background:var(--dem)}
+.chartwrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+svg{width:100%;height:auto;display:block}
+svg text{fill:var(--mute);font-family:var(--mono);font-size:10px}
+.hb-d{fill:var(--dem)}.hb-r{fill:var(--rep)}.thr{stroke:var(--tick);stroke-width:1.2;stroke-dasharray:3 3}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tabs button,.chip{font:inherit;font-size:.82rem;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:6px 12px;border-radius:4px;cursor:pointer}
+.tabs button[aria-pressed=true],.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tabs button:focus-visible,.chip:focus-visible,input:focus-visible{outline:2px solid var(--dem);outline-offset:2px}
+.sp{flex:1}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.75rem;color:var(--mute);margin:10px 0 4px}
+.legend span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;background:var(--c)}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);font-weight:600;cursor:pointer;user-select:none}
+td.n{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+th.n{text-align:right}
+.strip{position:relative;width:200px;height:16px;background:linear-gradient(90deg,var(--rep-soft),var(--dem-soft));border-radius:2px}
+.strip::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--line)}
+.strip i{position:absolute;top:3px;width:10px;height:10px;border-radius:50%;margin-left:-5px;background:var(--c);border:1px solid var(--panel);z-index:1}
+.comp{display:flex;align-items:center;gap:8px;min-width:120px}
+.comp .cb{flex:1;height:8px;background:var(--rep-soft);border-radius:2px;overflow:hidden}
+.comp .cb i{display:block;height:100%;background:var(--dem)}
+.tag{font-size:.72rem;padding:1px 6px;border-radius:3px;background:var(--line);color:var(--ink)}
+.note{font-size:.78rem;color:var(--mute);line-height:1.6}
+.note b{color:var(--ink)}
+@media (max-width:520px){.big{font-size:2rem}.strip{width:140px}}
+@media (prefers-reduced-motion:no-preference){.bar i,.cb i{transition:width .25s}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>2026 Midterm Seat Model</h1>
+    <p class="sub">Data as of <span id="asof">…</span> · FPO · Polymarket · Cook · Fundamentals · Drag the sliders and seats and odds recompute instantly</p>
+  </header>
+
+  <section class="panel ctl" aria-label="Controls">
+    <div>
+      <label for="nat">National House vote margin (Democratic lead)<output id="natO"></output></label>
+      <input id="nat" type="range" min="0" max="12" step="0.1" value="7.8">
+      <div class="hint">Default D+7.8 (average of FPO and RCP generic ballot). Moving away from 7.8 shifts the FPO, Polymarket and Cook signals by the same amount; the table shows shifted values. Fundamentals shift = this value + 1.5.</div>
+    </div>
+    <div>
+      <label for="fw">Fundamentals weight<output id="fwO"></output></label>
+      <input id="fw" type="range" min="0" max="60" step="5" value="25">
+      <div class="hint">Other signals scale proportionally: FPO 35 · Polymarket 25 · Cook 15 (governors have no FPO: PM 45 · Cook 30).</div>
+    </div>
+    <button id="rst" type="button">Reset sliders</button>
+  </section>
+
+  <section class="read" aria-label="Overview">
+    <div class="card"><h2>House · 218 needed</h2>
+      <div class="big"><span id="hExp"></span><small>expected Dem seats</small></div>
+      <div class="row">Control <b id="hCtl"></b> 80% range <b id="hRng"></b></div>
+      <div class="bar"><i id="hBar"></i></div></div>
+    <div class="card"><h2>Senate · 51 needed</h2>
+      <div class="big"><span id="sExp"></span><small>expected Dem seats</small></div>
+      <div class="row">Control <b id="sCtl"></b> 80% range <b id="sRng"></b></div>
+      <div class="bar"><i id="sBar"></i></div></div>
+    <div class="card"><h2>Governors · 8 tracked states</h2>
+      <div class="big"><span id="gExp"></span><small>expected Dem wins</small></div>
+      <div class="row">Majority (≥5) <b id="gCtl"></b></div>
+      <div class="bar"><i id="gBar"></i></div></div>
+  </section>
+
+  <section class="chartwrap" aria-label="Seat distribution">
+    <div class="card"><h2>House: Democratic seat distribution</h2><svg id="hSvg" viewBox="0 0 400 150" role="img" aria-label="House seat distribution"></svg></div>
+    <div class="card"><h2>Senate: Democratic seat distribution</h2><svg id="sSvg" viewBox="0 0 400 150" role="img" aria-label="Senate seat distribution"></svg></div>
+  </section>
+
+  <section class="panel">
+    <div class="tabs" role="group" aria-label="Choose chamber">
+      <button id="tH" aria-pressed="true">House</button>
+      <button id="tS" aria-pressed="false">Senate</button>
+      <button id="tG" aria-pressed="false">Governor</button>
+      <span class="sp"></span>
+      <button class="chip" id="close" aria-pressed="false">Only 20%–80%</button>
+    </div>
+    <div class="legend">
+      <span style="--c:var(--f-fpo)">FPO</span><span style="--c:var(--f-pm)">Polymarket</span>
+      <span style="--c:var(--f-cook)">Cook-implied</span><span style="--c:var(--f-fund)">Fundamentals</span>
+      <span>Further right = better for Democrats; midline is 50%</span>
+    </div>
+    <div class="tw"><table><thead id="thead"></thead><tbody id="tbody"></tbody></table></div>
+  </section>
+
+  <section class="panel" id="trend" style="margin-top:14px"><h2 style="margin:0 0 6px;font-size:15px">Trend across model runs</h2>
+  <div id="trendMsg" class="hint"></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px"><div><div class="hint">House: expected Dem seats (band = 80% range, line = 218)</div><svg id="trH" viewBox="0 0 400 170" style="width:100%"></svg></div>
+  <div><div class="hint">Probability Democrats win control</div><svg id="trC" viewBox="0 0 400 170" style="width:100%"></svg></div></div></section>
+  <p class="note"><b>Method.</b> Each seat's composite is a weighted average of available signals (missing ones dropped, weights renormalized). Seat totals come from a Gaussian-copula simulation (House correlation 0.31, Senate 0.38) calibrated so FPO-only seat spread matches FPO's published range.
+  Fundamentals = 2024 presidential margin (0.5) + 2024 House result (0.3) + 2022 House result (0.2) + national shift; district SD 5.5, Senate and governor SD 6.5.
+  TX, FL, OH, NC, MO, CA, UT, LA and TN were redrawn, so both House-result terms are dropped; AL, NY and GA drop 2022 only; districts without a results table use the presidential margin only.
+  GA, NH, MN and NC are treated as Democratic holds and FL and LA as Republican holds, not modeled. The table lists the 66 closest House districts; the other 369 are treated as safe (207 Democratic). Fundamentals reflect district lean only, not candidate quality, fundraising or scandals.</p>
+</div>
+
+<script>
+const CK={T:.5,l:.7,L:.3,k:.88,K:.12}, CKN={T:"Toss Up",l:"Lean D",L:"Lean R",k:"Likely D",K:"Likely R"};
+let H=[],S=[],G=[],FIXED=207;
+// Senate: st, FPO, PM, Cook, 2024 Trump margin
+const HIDE=new Set(['GA','NH','LA','MN','NC','FL']);
+const SN={AK:"Alaska",OH:"Ohio",TX:"Texas",IA:"Iowa",KS:"Kansas",ME:"Maine",MI:"Michigan",GA:"Georgia",NC:"North Carolina",NH:"New Hampshire",MN:"Minnesota",NE:"Nebraska",SC:"South Carolina",FL:"Florida",LA:"Louisiana"};
+const SN2={...SN,NV:"Nevada",WI:"Wisconsin"};
+
+function Phi(x){const t=1/(1+.2316419*Math.abs(x)),d=.3989423*Math.exp(-x*x/2);const p=d*t*(.3193815+t*(-.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return x>0?1-p:p}
+function probit(p){p=Math.min(Math.max(p,1e-6),1-1e-6);let lo=-8,hi=8;for(let i=0;i<40;i++){const m=(lo+hi)/2;Phi(m)<p?lo=m:hi=m}return lo}
+function gauss(){let u=0;while(!u)u=Math.random();return Math.sqrt(-2*Math.log(u))*Math.cos(6.283185307*Math.random())}
+function wavg(parts){let a=0,b=0;for(const [v,w] of parts){if(v!=null){a+=v*w;b+=w}}return a/b}
+
+const $=id=>document.getElementById(id);
+let state={tab:"H",close:false,sort:"comp",dir:-1};
+let calc={};
+
+function compute(){
+  const N=+$("nat").value,fw=+$("fw").value/100,sh=N+1.5,k=(1-fw)/.75;
+  const d=N-7.8, adj=(p,sg)=>p==null?null:Phi(probit(p)+d/sg);
+  H.forEach(h=>{h.fund=Phi((h.base+sh)/5.5);const c=h.ck?CK[h.ck]:(h.f>.5?.97:.03);h.cookP=adj(c,5.5);h.fA=adj(h.f,5.5);h.pA=adj(h.pm,5.5);h.comp=wavg([[h.fA,.35*k],[h.pA,.25*k],[h.cookP,.15*k],[h.fund,fw]])});
+  S.forEach(s=>{s.fund=Phi((-s.tr+sh)/6.5);const c=s.ck?CK[s.ck]:(s.f>.5?.97:.03);s.cookP=adj(c,6.5);s.fA=adj(s.f,6.5);s.pA=adj(s.pm,6.5);s.comp=wavg([[s.fA,.35*k],[s.pA,.25*k],[s.cookP,.15*k],[s.fund,fw]])});
+  G.forEach(g=>{g.fund=Phi((-g.tr+sh)/6.5);g.cookP=adj(CK[g.ck],6.5);g.pA=adj(g.pm,6.5);g.comp=wavg([[g.pA,.45*(1-fw)],[g.cookP,.30*(1-fw)],[g.fund,fw]])});
+  calc.h=sim(H.map(h=>h.comp),.309,FIXED,218,3000);
+  calc.s=sim(S.map(s=>s.comp),.376,47,51,5000);
+  calc.g=sim(G.map(g=>g.comp),.3,0,5,5000);
+}
+function sim(ps,rho,add,thr,n){
+  const z=ps.map(probit),a=Math.sqrt(rho),b=Math.sqrt(1-rho),m=ps.length,hist={};let sum=0,ctl=0;const all=[];
+  for(let i=0;i<n;i++){const S=gauss();let w=0;for(let j=0;j<m;j++)if(a*S+b*gauss()<z[j])w++;const t=w+add;hist[t]=(hist[t]||0)+1;sum+=t;if(t>=thr)ctl++;all.push(t)}
+  all.sort((x,y)=>x-y);
+  return{mean:sum/n,ctl:ctl/n,lo:all[Math.floor(n*.1)],hi:all[Math.floor(n*.9)],hist,n,thr,exp:ps.reduce((x,y)=>x+y,0)+add}
+}
+const pct=x=>Math.round(x*100)+"%";
+function histSvg(el,r,lo,hi){
+  const W=400,Hh=150,pl=6,pr=6,pt=8,pb=22,bw=(W-pl-pr)/(hi-lo+1);
+  const mx=Math.max(...Object.values(r.hist))/r.n;let s="";
+  for(let v=lo;v<=hi;v++){const p=(r.hist[v]||0)/r.n,h=p/mx*(Hh-pt-pb),x=pl+(v-lo)*bw;
+    s+=`<rect class="${v>=r.thr?'hb-d':'hb-r'}" x="${x.toFixed(1)}" y="${(Hh-pb-h).toFixed(1)}" width="${Math.max(bw-.6,.5).toFixed(1)}" height="${h.toFixed(1)}"></rect>`}
+  const tx=pl+(r.thr-lo)*bw;
+  s+=`<line class="thr" x1="${tx}" x2="${tx}" y1="${pt}" y2="${Hh-pb}"></line><text x="${tx+3}" y="${pt+8}">${r.thr}</text>`;
+  const step=(hi-lo)>40?10:5;
+  for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step)s+=`<text x="${pl+(v-lo)*bw+bw/2}" y="${Hh-6}" text-anchor="middle">${v}</text>`;
+  el.innerHTML=s;
+}
+function render(){
+  $("natO").textContent="D+"+(+$("nat").value).toFixed(1);$("fwO").textContent=$("fw").value+"%";
+  compute();
+  const h=calc.h,s=calc.s,g=calc.g;
+  $("hExp").textContent=Math.round(h.mean);$("hCtl").textContent=pct(h.ctl);$("hRng").textContent=h.lo+"–"+h.hi;$("hBar").style.width=Math.min(100,h.mean/435*100)+"%";
+  $("sExp").textContent=s.mean.toFixed(1);$("sCtl").textContent=pct(s.ctl);$("sRng").textContent=s.lo+"–"+s.hi;$("sBar").style.width=s.mean+"%";
+  $("gExp").textContent=g.mean.toFixed(1);$("gCtl").textContent=pct(g.ctl);$("gBar").style.width=g.mean/8*100+"%";
+  histSvg($("hSvg"),h,190,285);histSvg($("sSvg"),s,41,62);
+  table();
+}
+function strip(vals){return `<div class="strip">`+vals.filter(v=>v[1]!=null).map(v=>`<i style="left:${(v[1]*100).toFixed(1)}%;--c:${v[0]}" title="${(v[1]*100).toFixed(0)}%"></i>`).join("")+`</div>`}
+function compCell(p){return `<div class="comp"><span class="cb"><i style="width:${(p*100).toFixed(0)}%"></i></span><b style="font-family:var(--mono);min-width:3ch;text-align:right">${Math.round(p*100)}</b></div>`}
+function table(){
+  const t=state.tab;let rows,head;
+  const cols=[["name",t==="H"?"District":"State"],["fpo","FPO"],["pm","PM"],["ck","Cook"],["fund","Fund."],["comp","Composite"]];
+  if(t==="H")rows=H.map(h=>({n:h.id,name:h.id+(h.terms<3?`<span class="tag" style="margin-left:6px" title="${h.terms===1?'presidential margin only':'2 of 3 terms'}">${h.terms}t</span>`:""),fpo:h.fA,pm:h.pA,ck:h.ck?CKN[h.ck]:"Solid",fund:h.fund,comp:h.comp,cookP:h.cookP}));
+  else if(t==="S")rows=S.filter(x=>!HIDE.has(x.id)).map(x=>({n:x.id,name:SN[x.id],fpo:x.fA,pm:x.pA,ck:x.ck?CKN[x.ck]:"Solid",fund:x.fund,comp:x.comp,cookP:x.cookP}));
+  else rows=G.map(x=>({n:x.id,name:SN2[x.id],fpo:null,pm:x.pA,ck:CKN[x.ck],fund:x.fund,comp:x.comp,cookP:x.cookP}));
+  if(state.close)rows=rows.filter(r=>r.comp>=.2&&r.comp<=.8);
+  const key=state.sort;rows.sort((a,b)=>{const va=key==="name"?a.n:key==="ck"?a.cookP:a[key],vb=key==="name"?b.n:key==="ck"?b.cookP:b[key];return ((va??-1)>(vb??-1)?1:-1)*state.dir});
+  $("thead").innerHTML="<tr>"+cols.map(c=>`<th scope="col" data-k="${c[0]}" class="${c[0]==='name'||c[0]==='ck'?'':''}">${c[1]}${state.sort===c[0]?(state.dir<0?" ↓":" ↑"):""}</th>`).join("")+"</tr>";
+  $("tbody").innerHTML=rows.map(r=>`<tr><td>${r.name}</td><td class="n">${r.fpo==null?"–":Math.round(r.fpo*100)}</td><td class="n">${r.pm==null?"–":Math.round(r.pm*100)}</td><td>${r.ck}</td><td class="n">${Math.round(r.fund*100)}</td><td>${compCell(r.comp)}</td></tr>`).join("")||"<tr><td colspan=6>No seats match this filter</td></tr>";
+}
+$("nat").addEventListener("input",render);$("fw").addEventListener("input",render);$("rst").addEventListener("click",()=>{$("nat").value=7.8;$("fw").value=25;render()});
+$("thead").addEventListener("click",e=>{const k=e.target.closest("th")?.dataset.k;if(!k)return;if(state.sort===k)state.dir*=-1;else{state.sort=k;state.dir=k==="name"?1:-1}table()});
+[["tH","H"],["tS","S"],["tG","G"]].forEach(([id,t])=>$(id).addEventListener("click",()=>{state.tab=t;state.sort="comp";state.dir=-1;["tH","tS","tG"].forEach(i=>$(i).setAttribute("aria-pressed",i===id));table()}));
+$("close").addEventListener("click",()=>{state.close=!state.close;$("close").setAttribute("aria-pressed",state.close);table()});
+
+function trendDraw(hist){
+  const msg=document.getElementById("trendMsg");
+  if(!hist||hist.length<2){msg.textContent=hist&&hist.length?"Only one run recorded so far ("+hist[0].date+"). The chart appears after the second run (every Tue/Sat).":"No runs recorded yet.";return}
+  msg.textContent=hist.length+" runs, "+hist[0].date+" to "+hist[hist.length-1].date+".";
+  const W=400,Hh=170,pl=34,pr=8,pt=8,pb=22,n=hist.length,X=i=>pl+(n===1?0:i/(n-1))*(W-pl-pr);
+  function chart(el,series,lo,hi,fmt,extra){
+    const Y=v=>pt+(1-(v-lo)/(hi-lo))*(Hh-pt-pb);let s="";
+    for(let k=0;k<=4;k++){const v=lo+(hi-lo)*k/4;s+=`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)" stroke-width=".6"></line><text x="${pl-4}" y="${Y(v)+3}" text-anchor="end" font-size="9" fill="var(--mute)">${fmt(v)}</text>`}
+    if(extra)s+=extra(Y);
+    series.forEach(se=>{s+=`<polyline fill="none" stroke="${se.c}" stroke-width="2" points="${hist.map((r,i)=>X(i).toFixed(1)+","+Y(se.f(r)).toFixed(1)).join(" ")}"></polyline>`+hist.map((r,i)=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(se.f(r)).toFixed(1)}" r="2.5" fill="${se.c}"><title>${r.date}: ${fmt(se.f(r))}</title></circle>`).join("")});
+    [0,n-1].forEach(i=>s+=`<text x="${X(i)}" y="${Hh-6}" text-anchor="${i?'end':'start'}" font-size="9" fill="var(--mute)">${hist[i].date.slice(5)}</text>`);
+    el.innerHTML=s}
+  const hmin=Math.min(...hist.map(r=>r.house_lo),218)-5,hmax=Math.max(...hist.map(r=>r.house_hi),218)+5;
+  chart(document.getElementById("trH"),[{c:"var(--dem)",f:r=>r.house_mean}],hmin,hmax,v=>Math.round(v),Y=>`<polygon fill="var(--dem-soft)" opacity=".7" points="${hist.map((r,i)=>X(i).toFixed(1)+","+Y(r.house_hi).toFixed(1)).join(" ")} ${hist.slice().reverse().map((r,i)=>X(n-1-i).toFixed(1)+","+Y(r.house_lo).toFixed(1)).join(" ")}"></polygon><line x1="${pl}" x2="${W-pr}" y1="${Y(218)}" y2="${Y(218)}" stroke="var(--tick)" stroke-dasharray="4 3" stroke-width=".8"></line>`);
+  chart(document.getElementById("trC"),[{c:"var(--dem)",f:r=>r.house_ctl},{c:"var(--gold)",f:r=>r.senate_ctl}],0,1,v=>Math.round(v*100)+"%",Y=>`<text x="${W-pr}" y="${Y(.1)}" text-anchor="end" font-size="9" fill="var(--dem)">House</text><text x="${W-pr}" y="${Y(.03)}" text-anchor="end" font-size="9" fill="var(--gold)">Senate</text>`);
+}
+fetch("data.json?v="+Date.now()).then(r=>r.json()).then(d=>{
+  H=d.house.map(h=>({id:h.id,f:h.f,pm:h.pm,ck:h.ck||"",base:Math.max(-30,Math.min(30,h.base)),terms:h.terms}));
+  S=d.senate.map(x=>({id:x.id,f:x.f,pm:x.pm,ck:x.ck||"",tr:x.tr}));
+  G=d.gov.map(x=>({id:x.id,pm:x.pm,ck:x.ck,tr:x.tr}));
+  FIXED=d.fixedD;document.getElementById("asof").textContent=d.asof;
+  render();trendDraw(d.history);
+}).catch(e=>{document.getElementById("asof").textContent="data unavailable"});
+</script>
