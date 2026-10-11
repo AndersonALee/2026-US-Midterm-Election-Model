@@ -21,7 +21,7 @@ def wavg(parts):
     for v,w in parts:
         if v is not None: a+=v*w;b+=w
     return a/b
-fund_w=.25;k=(1-fund_w)/.75
+fund_w=.15;kh=(1-fund_w)/.75;k=(1-fund_w)/.85
 RD=sys.argv[2] if len(sys.argv)>2 else 'site'
 try: POLLS=json.load(open(os.path.join(RD,'polls.json')))
 except Exception: POLLS={'S':{},'G':{}}
@@ -39,7 +39,7 @@ def poll_sig(r):
     if n<3: mult*=.75
     sg=6.0 if n>=3 else 7.5
     return float(norm.cdf((dd-rr)/sg)),round(mult,2),[round(dd,1),round(rr,1),n,r['last']]
-# weights at the default 25% fundamentals weight (they scale with the slider): Senate FPO .25 PM .20 Cook .10 Polls .20; Governor PM .28 Cook .17 Polls .30
+# weights at the default 15% fundamentals weight (they scale with the slider): Senate Polls .30 FPO .25 PM .20 Cook .10; Governor Polls .43 PM .28 Cook .14 (no FPO); House FPO .40 PM .28 Cook .17
 cookh={}
 for cat,keys in inp['cookh'].items():
     for key in keys: cookh[key]=CK[cat]
@@ -52,7 +52,7 @@ for key,b in BASE.items():
     pm=pmh.get(key)
     c=cookh.get(key,.97 if f>.5 else .03)
     fu=float(norm.cdf((b+SH)/5.5))
-    comp=wavg([(f,.35*k),(pm,.25*k),(c,.15*k),(fu,fund_w)])
+    comp=wavg([(f,.35*kh),(pm,.25*kh),(c,.15*kh),(fu,fund_w)])
     H.append(dict(id=key,f=f,pm=pm,ck=c,fund=fu,comp=comp))
 S=[]
 for st,tr in SEN_TR.items():
@@ -62,13 +62,13 @@ for st,tr in SEN_TR.items():
     c=CK[cat] if cat else (.97 if f>.5 else .03)
     fu=float(norm.cdf((-tr+SH)/6.5))
     pp,pw,pa=poll_sig(POLLS['S'].get(st))
-    S.append(dict(id=st,f=f,pm=pm,ck=c,fund=fu,pp=pp,pw=pw,pa=pa,comp=wavg([(f,.25*k),(pm,.20*k),(c,.10*k),(pp,.20*k*pw),(fu,fund_w)])))
+    S.append(dict(id=st,f=f,pm=pm,ck=c,fund=fu,pp=pp,pw=pw,pa=pa,comp=wavg([(f,.25*k),(pm,.20*k),(c,.10*k),(pp,.30*k*pw),(fu,fund_w)])))
 G=[]
 for st,tr in GOV_TR.items():
     pm=inp['pmg'].get(st);cat=inp['cookg'].get(st);fu=float(norm.cdf((-tr+SH)/6.5))
     c=CK[cat] if cat else (.97 if (pm if pm is not None else fu)>.5 else .03)
     pp,pw,pa=poll_sig(POLLS['G'].get(st))
-    G.append(dict(id=st,pm=pm,ck=c,fund=fu,pp=pp,pw=pw,pa=pa,comp=wavg([(pm,.28*k),(c,.17*k),(pp,.30*k*pw),(fu,fund_w)])))
+    G.append(dict(id=st,pm=pm,ck=c,fund=fu,pp=pp,pw=pw,pa=pa,comp=wavg([(pm,.28*k),(c,.14*k),(pp,.43*k*pw),(fu,fund_w)])))
 rng=np.random.default_rng(7)
 def sim(ps,rho,add,thr,n=20000):
     z=norm.ppf(np.clip(ps,1e-6,1-1e-6));S_=rng.standard_normal((n,1));e=rng.standard_normal((n,len(ps)))

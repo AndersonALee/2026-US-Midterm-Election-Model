@@ -112,7 +112,7 @@ summary{cursor:pointer;color:var(--mute);font-size:.8rem}details.note summary{fo
     </div>
     <div>
       <label for="fw"><span data-i="fwL"></span><output id="fwO"></output></label>
-      <input id="fw" type="range" min="0" max="60" step="5" value="25">
+      <input id="fw" type="range" min="0" max="60" step="5" value="15">
     </div>
     <button id="rst" type="button" data-i="rst"></button>
     <details class="hint" style="grid-column:1/-1"><summary data-i="hintT"></summary><p data-i="natH" style="margin:6px 0 0"></p><p data-i="fwH" style="margin:4px 0 0"></p></details>
@@ -189,11 +189,11 @@ let state={tab:"H",close:true,sort:"comp",dir:-1};
 let calc={};
 
 function compute(){
-  const N=+$("nat").value,fw=+$("fw").value/100,sh=N+1.5,k=(1-fw)/.75;
+  const N=+$("nat").value,fw=+$("fw").value/100,sh=N+1.5,k=(1-fw)/.75,ks=(1-fw)/.85;
   const d=N-D0.N0, adj=(p,sg)=>p==null?null:Phi(probit(p)+d/sg);
   H.forEach(h=>{h.fund=Phi((h.base+sh)/5.5);const c=h.ck?CK[h.ck]:(h.f>.5?.97:.03);h.cookP=adj(c,5.5);h.fA=adj(h.f,5.5);h.pA=adj(h.pm,5.5);h.comp=wavg([[h.fA,.35*k],[h.pA,.25*k],[h.cookP,.15*k],[h.fund,fw]])});
-  S.forEach(s=>{s.fund=Phi((-s.tr+sh)/6.5);const c=s.ck?CK[s.ck]:(s.f>.5?.97:.03);s.cookP=adj(c,6.5);s.fA=adj(s.f,6.5);s.pA=adj(s.pm,6.5);s.pP=adj(s.pp,6.5);s.comp=wavg([[s.fA,.25*k],[s.pA,.20*k],[s.cookP,.10*k],[s.pP,.20*k*(s.pw||0)],[s.fund,fw]])});
-  G.forEach(g=>{g.fund=Phi((-g.tr+sh)/6.5);g.cookP=adj(g.ck?CK[g.ck]:((g.pm!=null?g.pm:g.fund)>.5?.97:.03),6.5);g.pA=adj(g.pm,6.5);g.pP=adj(g.pp,6.5);g.comp=wavg([[g.pA,.28*k],[g.cookP,.17*k],[g.pP,.30*k*(g.pw||0)],[g.fund,fw]])});
+  S.forEach(s=>{s.fund=Phi((-s.tr+sh)/6.5);const c=s.ck?CK[s.ck]:(s.f>.5?.97:.03);s.cookP=adj(c,6.5);s.fA=adj(s.f,6.5);s.pA=adj(s.pm,6.5);s.pP=adj(s.pp,6.5);s.comp=wavg([[s.fA,.25*ks],[s.pA,.20*ks],[s.cookP,.10*ks],[s.pP,.30*ks*(s.pw||0)],[s.fund,fw]])});
+  G.forEach(g=>{g.fund=Phi((-g.tr+sh)/6.5);g.cookP=adj(g.ck?CK[g.ck]:((g.pm!=null?g.pm:g.fund)>.5?.97:.03),6.5);g.pA=adj(g.pm,6.5);g.pP=adj(g.pp,6.5);g.comp=wavg([[g.pA,.28*ks],[g.cookP,.14*ks],[g.pP,.43*ks*(g.pw||0)],[g.fund,fw]])});
   calc.h=sim(H.map(h=>h.comp),(D0.rho_h||.5),D0.fixed_dem,218,3000);
   calc.s=sim(S.map(s=>s.comp),.376,D0.sen_add,51,5000);
   calc.g=sim(G.map(g=>g.comp),.3,D0.gov_add,D0.gov_thr,5000);
@@ -222,7 +222,7 @@ en:{title:"2026 Midterm Seat Model",
 sub:"Data as of {asof} · FPO · Polymarket · Cook · RCP polls · Fundamentals · Drag the sliders and seats and odds recompute instantly",
 natL:"National House vote margin (Democratic lead)",
 natH:"Default D+{N0} (average of FPO and RCP generic ballot). Moving away from it shifts the FPO, Polymarket, Cook and poll signals by the same amount; the table shows shifted values. Fundamentals shift = this value + 1.5.",
-fwL:"Fundamentals weight",fwH:"Other signals scale proportionally: at the default 25%: Senate FPO 25 · Polymarket 20 · Cook 10 · RCP polls 20; Governors Polymarket 28 · Cook 17 · polls 30 (no FPO). Polls with a stale or thin average count less; races without polls fall back to the other signals.",
+fwL:"Fundamentals weight",fwH:"Other signals scale proportionally: at the default 15%: Senate polls 30 · FPO 25 · Polymarket 20 · Cook 10; Governors polls 43 · Polymarket 28 · Cook 14 (no FPO); House FPO 40 · Polymarket 28 · Cook 17 (no polls). Polls with a stale or thin average count less; races without polls fall back to the other signals.",
 rst:"Reset sliders",hintT:"How the sliders work",methT:"Method",hT:"House · 218 needed",sT:"Senate · 51 needed",gT:"Governors · 36 races",
 expS:"expected Dem seats",expG:"expected Dem governors (of 50)",ctl:"Control",rng:"80% range",maj:"Majority (≥26 of 50)",
 hD:"House: Democratic seat distribution",sD:"Senate: Democratic seat distribution",
@@ -244,7 +244,7 @@ zh:{title:"2026 年中期选举席位模型",
 sub:"数据截至 {asof} · FPO · Polymarket · Cook · RCP 民调 · 基本面 · 拖动滑块,席位和概率即时重算",
 natL:"全国众议院得票差(民主党领先)",
 natH:"默认 D+{N0}(FPO 与 RCP 通用选票的平均)。偏离默认值时,FPO、Polymarket、Cook 和民调信号会同步移动,表格显示移动后的值。基本面的移动量 = 此值 + 1.5。",
-fwL:"基本面权重",fwH:"其他信号按比例缩放:默认 25% 时:参议院 FPO 25 · Polymarket 20 · Cook 10 · RCP 民调 20;州长 Polymarket 28 · Cook 17 · 民调 30(没有 FPO)。民调过旧或数量少时权重降低;没有民调的选举回退到其他信号。",
+fwL:"基本面权重",fwH:"其他信号按比例缩放:默认 15% 时:参议院 民调 30 · FPO 25 · Polymarket 20 · Cook 10;州长 民调 43 · Polymarket 28 · Cook 14(没有 FPO);众议院 FPO 40 · Polymarket 28 · Cook 17(没有民调)。民调过旧或数量少时权重降低;没有民调的选举回退到其他信号。",
 rst:"重置滑块",hintT:"滑块说明",methT:"方法",hT:"众议院 · 需 218 席",sT:"参议院 · 需 51 席",gT:"州长 · 36 场选举",
 expS:"民主党预期席位",expG:"民主党州长预期数(共 50)",ctl:"控制概率",rng:"80% 区间",maj:"过半(≥26/50)",
 hD:"众议院:民主党席位分布",sD:"参议院:民主党席位分布",
@@ -390,7 +390,7 @@ async function init(){
   G=D0.G.map(a=>({id:a[0],pm:a[1],ck:a[2],tr:a[3],pp:a[4]??null,pw:a[5]??0,pa:a[6]??null}));
   $("nat").value=D0.N0;
   $("nat").addEventListener("input",render);$("fw").addEventListener("input",render);
-  $("rst").addEventListener("click",()=>{$("nat").value=D0.N0;$("fw").value=25;render()});
+  $("rst").addEventListener("click",()=>{$("nat").value=D0.N0;$("fw").value=15;render()});
   $("lang").addEventListener("click",()=>{lang=lang==='zh'?'en':'zh';applyLang()});
   $("thead").addEventListener("click",e=>{const k=e.target.closest("th")?.dataset.k;if(!k)return;if(state.sort===k)state.dir*=-1;else{state.sort=k;state.dir=k==="name"?1:-1}table()});
   const HM={house:"H",senate:"S",governors:"G"},HR={H:"house",S:"senate",G:"governors"};
