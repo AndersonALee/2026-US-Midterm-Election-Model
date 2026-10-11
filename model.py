@@ -89,10 +89,11 @@ def ckcode(p):
     return ''
 hs=sorted(H,key=lambda x:abs(x['comp']-.5));top=hs[:66];rest=hs[66:]
 fixed=sum(1 for x in rest if x['comp']>.5)
+As=';'.join('%s,%s'%(x['id'],round(x['comp'],3)) for x in sorted(rest,key=lambda x:x['id']))
 Hs=';'.join(','.join(str(v) for v in [x['id'],round(x['f'],3),-1 if x['pm'] is None else round(x['pm'],3),ckcode(x['ck']) if x['id'] in cookh else '',round(max(-30,min(30,BASE[x['id']])),1),terms(x['id'])]) for x in sorted(top,key=lambda x:x['id']))
 Ss=[[x['id'],round(x['f'],3),None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cooks'].get(x['id']),''),SEN_TR[x['id']]] for x in S]
 Gs=[[x['id'],None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cookg'].get(x['id']),''),GOV_TR[x['id']]] for x in G]
-json.dump(dict(asof=res['date'],N0=N,fixed_dem=fixed,sen_add=47,n_listed=66,rho_h=.5,H=Hs,S=Ss,G=Gs),open(os.path.join(RD,'data.json'),'w'),separators=(',',':'))
+json.dump(dict(asof=res['date'],N0=N,fixed_dem=fixed,sen_add=47,n_listed=66,rho_h=.5,H=Hs,A=As,S=Ss,G=Gs),open(os.path.join(RD,'data.json'),'w'),separators=(',',':'))
 hist=[r for r in ld('history.json',[]) if r.get('date')!=res['date']]
 hist.append(dict(date=res['date'],N=N,house_mean=res['house']['mean'],house_ctl=res['house']['ctl'],house_lo=res['house']['lo'],house_hi=res['house']['hi'],fpo_only=res['house']['fpo_only'],senate_mean=res['senate']['mean'],senate_ctl=res['senate']['ctl'],senate_lo=res['senate']['lo'],senate_hi=res['senate']['hi'],gov_mean=res['gov']['mean'],gov_maj=res['gov']['maj']))
 json.dump(hist,open(os.path.join(RD,'history.json'),'w'),separators=(',',':'))
