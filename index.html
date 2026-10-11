@@ -225,7 +225,7 @@ fwL:"Fundamentals weight",fwH:"Other signals scale proportionally: FPO 35 · Pol
 rst:"Reset sliders",hintT:"How the sliders work",methT:"Method",hT:"House · 218 needed",sT:"Senate · 51 needed",gT:"Governors · 36 races",
 expS:"expected Dem seats",expG:"expected Dem governors (of 50)",ctl:"Control",rng:"80% range",maj:"Majority (≥26 of 50)",
 hD:"House: Democratic seat distribution",sD:"Senate: Democratic seat distribution",
-trT:"Trend across model runs",tblT:"Show data table",oo:" out of 100",rWin:"R win %",vwT:"Switch to tile map",vwG:"Switch to district map",ampSrc:"District boundaries (post-redistricting) © amCharts geodata, linkware license",mapNHg:"Real district boundaries (latest maps after mid-decade redistricting). The 66 closest districts react to the sliders; the other {nr} are fixed. Small urban districts are hard to see here: switch to the tile map.",mapNH:"Each square is one district, grouped by state. The 66 closest districts react to the sliders; the other {nr} are fixed in the simulation (colored by their composite).",mapNS:"Colors follow our own rating and update with the sliders. Hover or tap a state for details.",mapNG:"All 36 governor races are modeled. Hover or tap a state for details.",
+trT:"Trend across model runs",tblT:"Show data table",noNames:"Candidate names not available for this district.",oo:" out of 100",rWin:"R win %",vwT:"Switch to tile map",vwG:"Switch to district map",ampSrc:"District boundaries (post-redistricting) © amCharts geodata, linkware license",mapNHg:"Real district boundaries (latest maps after mid-decade redistricting). The 66 closest districts react to the sliders; the other {nr} are fixed. Small urban districts are hard to see here: switch to the tile map.",mapNH:"Each square is one district, grouped by state. The 66 closest districts react to the sliders; the other {nr} are fixed in the simulation (colored by their composite).",mapNS:"Colors follow our own rating and update with the sliders. Hover or tap a state for details.",mapNG:"All 36 governor races are modeled. Hover or tap a state for details.",
 lgNot:"Not up for reelection",lgAssD:"Solid D, assumed (not modeled)",lgAssR:"Solid R, assumed (not modeled)",lgUp:"Up in 2026, not tracked",lgNoG:"No race in 2026",
 tipSafe:"Not among the 66 closest districts; held fixed in the simulation.",tipAssD:"Up in 2026 but not modeled; treated as a Democratic hold.",tipAssR:"Up in 2026 but not modeled; treated as a Republican hold.",tipNoS:"No Senate race in 2026 (not up for reelection).",tipUpG:"Governor race in 2026, not tracked by this model.",tipNoG:"No governor race in 2026.",
 trEmpty:"The trend appears after the second model run (runs happen every Tuesday and Saturday).",
@@ -247,7 +247,7 @@ fwL:"基本面权重",fwH:"其他信号按比例缩放:FPO 35 · Polymarket 25 �
 rst:"重置滑块",hintT:"滑块说明",methT:"方法",hT:"众议院 · 需 218 席",sT:"参议院 · 需 51 席",gT:"州长 · 36 场选举",
 expS:"民主党预期席位",expG:"民主党州长预期数(共 50)",ctl:"控制概率",rng:"80% 区间",maj:"过半(≥26/50)",
 hD:"众议院:民主党席位分布",sD:"参议院:民主党席位分布",
-trT:"各次模型运行的走势",tblT:"显示数据表",oo:" / 100",rWin:"共和党胜率 %",vwT:"切换为方块图",vwG:"切换为选区边界图",ampSrc:"选区边界(重划后)© amCharts geodata,linkware 许可",mapNHg:"真实选区边界(中期重划后的最新地图)。最接近的 66 个选区随滑块变化,其余 {nr} 个固定。城市里的小选区在这里很难看清,可切换为方块图。",mapNH:"每个方块代表一个选区,按州分组。最接近的 66 个选区会随滑块变化;其余 {nr} 个在模拟中固定(按各自综合概率着色)。",mapNS:"颜色按本模型评级,随滑块更新。悬停或点按州查看详情。",mapNG:"36 个州长选举全部建模。悬停或点按州查看详情。",
+trT:"各次模型运行的走势",tblT:"显示数据表",noNames:"暂无该选区的候选人名字。",oo:" / 100",rWin:"共和党胜率 %",vwT:"切换为方块图",vwG:"切换为选区边界图",ampSrc:"选区边界(重划后)© amCharts geodata,linkware 许可",mapNHg:"真实选区边界(中期重划后的最新地图)。最接近的 66 个选区随滑块变化,其余 {nr} 个固定。城市里的小选区在这里很难看清,可切换为方块图。",mapNH:"每个方块代表一个选区,按州分组。最接近的 66 个选区会随滑块变化;其余 {nr} 个在模拟中固定(按各自综合概率着色)。",mapNS:"颜色按本模型评级,随滑块更新。悬停或点按州查看详情。",mapNG:"36 个州长选举全部建模。悬停或点按州查看详情。",
 lgNot:"今年无参议院改选",lgAssD:"稳 D,假定(未建模)",lgAssR:"稳 R,假定(未建模)",lgUp:"2026 年有选举,未追踪",lgNoG:"2026 年无选举",
 tipSafe:"不在最接近的 66 个选区之内,模拟中固定。",tipAssD:"2026 年有选举,但未建模,按民主党守住处理。",tipAssR:"2026 年有选举,但未建模,按共和党守住处理。",tipNoS:"2026 年无参议院选举(不改选)。",tipUpG:"2026 年有州长选举,本模型未追踪。",tipNoG:"2026 年无州长选举。",
 trEmpty:"第二次模型运行之后会显示走势(每周二、周六各运行一次)。",
@@ -291,11 +291,11 @@ function tipHead(name,p){const [n,c]=ratingOf(p);return `<b>${name}</b> <span cl
 const plb=p=>{const v=p*100;return(v<1?'<1':v>99?'>99':Math.round(v))+t('oo')};
 function candBlock(ty,id,x,nm){const c=CN&&CN[ty]&&CN[ty][id];const [n,cls]=ratingOf(x.comp);
   let h=`<div class="th"><b>${nm}</b><span class="rt ${cls}">${t(n)}</span></div>`;
-  if(c){const o={D:0,R:1},cc=c.slice().sort((a,b)=>(o[a[0]]??2)-(o[b[0]]??2)),di=cc.findIndex(a=>a[0]==='D'),si=di>=0?di:cc.findIndex(a=>a[0]!=='R');
+  if(c){const o={D:0,R:1},cc=c.concat(c.some(a=>a[0]!=='R')?[]:[['D','Democratic nominee (name n/a)',0]]).sort((a,b)=>(o[a[0]]??2)-(o[b[0]]??2)),di=cc.findIndex(a=>a[0]==='D'),si=di>=0?di:cc.findIndex(a=>a[0]!=='R');
     h+=cc.map((a,i)=>{const p=a[0]==='R'?1-x.comp:i===si?x.comp:null;return `<div class="cr ${a[0]}"><span>${a[2]?'* ':''}${a[1]}${a[0]==='I'?' (I)':''}</span><span>${p==null?'–':plb(p)}</span></div>`}).join('')}
   return h+'<hr>'}
 function tipFor(k){const [ty,id]=k.split(":");
-  if(ty==="H"){const h=H.find(x=>x.id===id);if(h)return tipHead(id,h.comp)+"<br>"+sig(h);const a=AL.find(x=>x.id===id);return tipHead(id,a.c)+`<br><span class="mu">${t('tipSafe')}</span>`}
+  if(ty==="H"){const h=H.find(x=>x.id===id);if(h)return (CN&&CN.H&&CN.H[id]?candBlock("H",id,h,id)+`${t('comp')}: ${h.comp<.5?pc(1-h.comp)+'% R':pc(h.comp)+'% D'}<br>`+sig(h):tipHead(id,h.comp)+"<br>"+sig(h)+(CN?`<br><span class="mu">${t('noNames')}</span>`:""));const a=AL.find(x=>x.id===id);return tipHead(id,a.c)+`<br><span class="mu">${t('tipSafe')}</span>`}
   const x=(ty==="S"?S:G).find(y=>y.id===id),nm=sname(id);
   if(x)return candBlock(ty,id,x,nm)+`${t('comp')}: ${x.comp<.5?pc(1-x.comp)+'% R':pc(x.comp)+'% D'}<br>`+sig(x);
   if(ty==="S"){if(SEN_D.has(id)||SEN_R.has(id)){const d=SEN_D.has(id);return `<b>${nm}</b> <span class="rt ${d?'s D':'s R'}">${t(d?'Solid D':'Solid R')}</span><br><span class="mu">${t(d?'tipAssD':'tipAssR')}</span>`}return `<b>${nm}</b><br><span class="mu">${t('tipNoS')}</span>`}
