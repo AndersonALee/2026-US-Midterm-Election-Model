@@ -80,13 +80,13 @@ res=dict(date=str(datetime.date.today()),N=N,house=dict(mean=round(h['mean'],1),
  senate=dict(mean=round(s['mean'],1),ctl=round(s['ctl'],3),lo=s['lo'],hi=s['hi']),gov=dict(mean=round(g['mean'],1),maj=round(g['ctl'],3)),
  sen={x['id']:round(x['comp'],3) for x in S},gov_p={x['id']:round(x['comp'],3) for x in G},
  close=[(x['id'],round(x['comp'],3)) for x in sorted(H,key=lambda x:abs(x['comp']-.5))[:12]])
-# own rating (composite = Dem win prob): Solid >=95, Likely 80-95, Lean 65-80, Tilt 55-65, Toss-up 45-55 (mirrored for R)
+# own rating (composite = Dem win prob): Solid >=90, Likely 80-90, Lean 70-80, Tilt 60-70, Toss-up 40-60 (mirrored for R)
 def rating(p):
     q=max(p,1-p);side='D' if p>=.5 else 'R'
-    if q>=.95: return 'Solid '+side,4 if side=='D' else -4
+    if q>=.90: return 'Solid '+side,4 if side=='D' else -4
     if q>=.80: return 'Likely '+side,3 if side=='D' else -3
-    if q>=.65: return 'Lean '+side,2 if side=='D' else -2
-    if q>=.55: return 'Tilt '+side,1 if side=='D' else -1
+    if q>=.70: return 'Lean '+side,2 if side=='D' else -2
+    if q>=.60: return 'Tilt '+side,1 if side=='D' else -1
     return 'Toss-up',0
 CKO={'Toss Up':0,'Lean D':2,'Likely D':3,'Lean R':-2,'Likely R':-3}
 res_extra=dict(sen_rating={x['id']:rating(x['comp'])[0] for x in S},gov_rating={x['id']:rating(x['comp'])[0] for x in G})
