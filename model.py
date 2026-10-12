@@ -218,8 +218,15 @@ Hs=';'.join(','.join(str(v) for v in [x['id'],-1 if x['inst'] is None else round
 Ss=[[x['id'],round(x['inst'],3),None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cooks'].get(x['id']),''),SEN_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa'],{k:round(v,3) for k,v in x['src'].items() if v is not None and k!='cook'}] for x in S]
 Gs=[[x['id'],None if x['pm'] is None else round(x['pm'],3),CODE.get(inp['cookg'].get(x['id']),''),GOV_TR[x['id']],None if x['pp'] is None else round(x['pp'],3),x['pw'],x['pa'],round(x['inst'],3),{k:round(v,3) for k,v in x['src'].items() if v is not None and k!='cook'}] for x in G]
 json.dump(dict(asof=res['date'],disc=DISC,ts=__import__('datetime').datetime.now(__import__('datetime').timezone.utc).strftime('%Y-%m-%dT%H:%MZ'),N0=N,v=2,wb=dict(WB),wbh=dict(WBH),inst_asof={k:(INSTX.get(k) or {}).get('asof') for k in ('ddhq','st','vh')},fixed_dem=fixed,gov_pres=GOV_PRES,sen_add=SEN_ADD,gov_add=GOV_ADD,gov_thr=GOV_THR,n_listed=66,rho_h=.5,H=Hs,A=As,S=Ss,G=Gs,C={x['id']:round(x['comp'],3) for x in H},SC={x['id']:round(x['comp'],3) for x in S},GC={x['id']:round(x['comp'],3) for x in G}),open(os.path.join(RD,'data.json'),'w'),separators=(',',':'))
-hist=[r for r in ld('history.json',[]) if r.get('date')!=res['date']]
-hist.append(dict(date=res['date'],N=N,house_mean=res['house']['mean'],house_ctl=res['house']['ctl'],house_lo=res['house']['lo'],house_hi=res['house']['hi'],fpo_only=res['house']['fpo_only'],senate_mean=res['senate']['mean'],senate_ctl=res['senate']['ctl'],senate_lo=res['senate']['lo'],senate_hi=res['senate']['hi'],gov_mean=res['gov']['mean'],gov_maj=res['gov']['maj']))
+import zoneinfo
+_now=datetime.datetime.now(datetime.timezone.utc);_ct=_now.astimezone(zoneinfo.ZoneInfo('America/Chicago'))
+def _age_h(r):
+    try: return abs((_now-datetime.datetime.strptime(r['ts'],'%Y-%m-%dT%H:%MZ').replace(tzinfo=datetime.timezone.utc)).total_seconds())/3600
+    except Exception: return 99
+# one point per model run; a rerun within 3 hours of an earlier run replaces it
+hist=[r for r in ld('history.json',[]) if _age_h(r)>=3]
+hist.append(dict(ts=_now.strftime('%Y-%m-%dT%H:%MZ'),date=_ct.strftime('%Y-%m-%d'),N=N,house_mean=res['house']['mean'],house_ctl=res['house']['ctl'],house_lo=res['house']['lo'],house_hi=res['house']['hi'],fpo_only=res['house']['fpo_only'],senate_mean=res['senate']['mean'],senate_ctl=res['senate']['ctl'],senate_lo=res['senate']['lo'],senate_hi=res['senate']['hi'],gov_mean=res['gov']['mean'],gov_maj=res['gov']['maj']))
+hist.sort(key=lambda r:r.get('ts',r['date']))
 json.dump(hist,open(os.path.join(RD,'history.json'),'w'),separators=(',',':'))
 # image
 bg,panel,ink,mute='#0f1218','#171b24','#eceff5','#9aa3b2';D,R='#6aa3ff','#ff7a6e'
