@@ -24,7 +24,7 @@ NM={'AK':'Alaska','OH':'Ohio','TX':'Texas','IA':'Iowa','KS':'Kansas','ME':'Maine
 # ---------------- v2: four modules (fund, poll, pm, institution) combined in probit space ----------------
 SIG=6.0                                   # margin scale (points): z = margin / SIG
 ELECTION=datetime.date(2026,11,3)
-WB={'poll':.40,'inst':.30,'pm':.15,'fund':.15}       # base weights (Senate, governor)
+WB={'poll':.50,'inst':.25,'pm':.10,'fund':.15}       # base weights (Senate, governor)
 WBH={'inst':.60,'pm':.25,'fund':.15}                 # base weights (House: no polls)
 def Z(p): return float(norm.ppf(min(max(p,.005),.995)))
 # Cook category -> expected Dem margin (points); the expert ratings enter the institution module as margins
